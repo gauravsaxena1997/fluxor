@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import * as ReactDOM from 'react-dom';
 import {
   DndContext,
   closestCenter,
@@ -156,7 +157,8 @@ const LinkModal = ({
   
   if (!isOpen) return null;
   
-  return (
+  // Use createPortal to render the modal at the document body level
+  const modalContent = (
     <div className="link-modal-overlay" onClick={onClose}>
       <div 
         className="link-modal" 
@@ -235,16 +237,20 @@ const LinkModal = ({
         </div>
         
         <div className="link-modal-footer">
-          <button className="link-modal-btn cancel" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="link-modal-btn save" onClick={handleSave}>
-            {isEdit ? 'Update' : 'Add'}
-          </button>
+          <div className="link-modal-actions">
+            <button className="link-modal-btn link-modal-cancel" onClick={onClose}>
+              Cancel
+            </button>
+            <button className="link-modal-btn link-modal-save" onClick={handleSave}>
+              {isEdit ? 'Update' : 'Add'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
+  
+  return ReactDOM.createPortal(modalContent, document.body);
 };
 
 const SortableGroup = ({ 
@@ -327,7 +333,6 @@ const SortableGroup = ({
             >
               <DriveFileRenameOutlineIcon />
             </button>
-            
             <button 
               onClick={() => {
                 onGroupEdit(group.id, groupName);
@@ -339,7 +344,6 @@ const SortableGroup = ({
             >
               <CheckIcon />
             </button>
-            
             <button 
               onClick={() => onLinkAdd(group.id)} 
               className="icon-btn add-btn"
@@ -372,8 +376,8 @@ const SortableGroup = ({
         onDragEnd={(event) => onLinkDragEnd(event, group.id)}
       >
         <div 
-          className="links-grid" 
-          style={{ gridTemplateColumns: `repeat(${linksPerRow}, 1fr)` }}
+          className="group-links" 
+          data-links-per-row={linksPerRow}
           data-group-id={group.id}
         >
           {!isEditMode && group.links.length === 0 ? (
@@ -456,17 +460,6 @@ const SortableLink = ({
       className={`quick-link ${isDragging ? 'is-dragging' : ''} ${isEditMode ? 'edit-mode' : ''} ${!hasValidUrl ? 'no-url' : ''}`}
       title={hasValidUrl ? link.url : 'No URL set'}
     >
-      {isEditMode && (
-        <span 
-          className="link-drag-handle"
-          {...attributes}
-          {...listeners}
-          title="Drag to reorder"
-        >
-          <DragIndicatorIcon style={{ fontSize: '16px' }} />
-        </span>
-      )}
-      
       <div 
         className="link-content"
         onClick={handleLinkClick}
@@ -483,10 +476,19 @@ const SortableLink = ({
       </div>
       
       {isEditMode && (
-        <div className="link-actions-footer">
+        <div className="link-edit-controls">
+          <button 
+            className="link-drag-btn"
+            {...attributes}
+            {...listeners}
+            aria-label="Drag link"
+            title="Drag to reorder"
+          >
+            <DragIndicatorIcon style={{ fontSize: '16px' }} />
+          </button>
           <button 
             onClick={onEdit} 
-            className="icon-btn edit-btn"
+            className="link-edit-btn"
             aria-label="Edit link"
             title="Edit link"
           >
@@ -494,7 +496,7 @@ const SortableLink = ({
           </button>
           <button 
             onClick={onDelete} 
-            className="icon-btn delete-btn"
+            className="link-delete-btn"
             aria-label="Delete link"
             title="Delete link"
           >
@@ -758,6 +760,25 @@ const LinksSection = ({
       {/* Quick Links header with edit/save button */}
       <div className="links-section-header">
         <h3>Quick Links</h3>
+        {isEditMode && (
+          <div className="header-group-form">
+            <input
+              type="text"
+              value={groupNameInput}
+              onChange={(e) => setGroupNameInput(e.target.value)}
+              placeholder="New group"
+              className="header-group-input"
+            />
+            <button 
+              onClick={handleAddGroup}
+              className="header-group-btn"
+              disabled={!groupNameInput.trim()}
+              title="Create new group"
+            >
+              <AddIcon fontSize="small" />
+            </button>
+          </div>
+        )}
         <button 
           className="edit-toggle-btn icon-btn" 
           onClick={toggleEditMode}
@@ -799,34 +820,12 @@ const LinksSection = ({
               <span className="value-display">{linksPerRow}</span>
               <button 
                 className="control-btn" 
-                onClick={() => linksPerRow < 6 && setLinksPerRow(linksPerRow + 1)}
-                disabled={linksPerRow >= 6}
+                onClick={() => linksPerRow < 5 && setLinksPerRow(linksPerRow + 1)}
+                disabled={linksPerRow >= 5}
                 aria-label="Increase links per row"
               >
                 <AddIcon />
               </button>
-            </div>
-          </div>
-          
-          <div className="settings-row">
-            <div className="settings-label">Add New Group</div>
-            <div className="settings-input">
-              <div className="add-group-form">
-                <input
-                  type="text"
-                  value={groupNameInput}
-                  onChange={(e) => setGroupNameInput(e.target.value)}
-                  placeholder="New group name"
-                  className="add-group-input"
-                />
-                <button 
-                  onClick={handleAddGroup}
-                  className="add-group-btn"
-                  disabled={!groupNameInput.trim()}
-                >
-                  <AddIcon /> Add
-                </button>
-              </div>
             </div>
           </div>
         </div>

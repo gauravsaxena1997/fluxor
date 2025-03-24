@@ -115,15 +115,23 @@ function App() {
         {/* Info Section with time and search */}
         <InfoSection />
 
-        {/* Quick links */}
-        <LinksSection 
-          linkGroups={linkGroups}
-          linkDisplayMode={linkDisplayMode}
-          setLinkGroups={setLinkGroups}
-          setLinkDisplayMode={setLinkDisplayMode}
-          linksPerRow={linksPerRow}
-          setLinksPerRow={setLinksPerRow}
-        />
+        {/* Main container for Links and future features */}
+        <div className="home-container">
+          {/* Quick links (takes 50% width) */}
+          <LinksSection 
+            linkGroups={linkGroups}
+            linkDisplayMode={linkDisplayMode}
+            setLinkGroups={setLinkGroups}
+            setLinkDisplayMode={setLinkDisplayMode}
+            linksPerRow={linksPerRow}
+            setLinksPerRow={setLinksPerRow}
+          />
+          
+          {/* Future features will go here (right 50% of the screen) */}
+          <div className="future-features-area">
+            {/* This area is intentionally left empty for future features */}
+          </div>
+        </div>
       </div>
 
       {/* Settings Popup */}
