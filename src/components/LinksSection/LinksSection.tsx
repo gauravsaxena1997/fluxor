@@ -17,8 +17,9 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useTheme } from '../../context/ThemeContext';
+import { useData } from '../../context/DataContext';
 import { getIconComponent, filterIconSuggestions } from '../../utils/iconUtils';
+import { LinkGroup, LinkItem, LinkDisplayMode } from '../../context/DataContext';
 
 // MUI Icons
 import EditIcon from '@mui/icons-material/Edit';
@@ -38,28 +39,16 @@ import ToggleSelector from '../ToggleSelector';
 // Styles
 import './LinksSection.css';
 
-interface QuickLink {
-  id: string;
-  name: string;
-  url: string;
-  icon: string;
-}
-
-interface LinkGroup {
-  id: string;
-  name: string;
-  links: QuickLink[];
-}
-
-type LinkDisplayMode = 'icon-only' | 'name-only' | 'both';
+// Using types from DataContext now
+type QuickLink = LinkItem;
 
 interface LinksSectionProps {
   linkGroups: LinkGroup[];
   linkDisplayMode: LinkDisplayMode;
-  setLinkGroups: React.Dispatch<React.SetStateAction<LinkGroup[]>>;
-  setLinkDisplayMode: React.Dispatch<React.SetStateAction<LinkDisplayMode>>;
+  setLinkGroups: (groups: LinkGroup[]) => void;
+  setLinkDisplayMode: (mode: LinkDisplayMode) => void;
   linksPerRow: number;
-  setLinksPerRow: React.Dispatch<React.SetStateAction<number>>;
+  setLinksPerRow: (count: number) => void;
 }
 
 const LinkModal = ({
@@ -558,7 +547,11 @@ const LinksSection = ({
   linksPerRow,
   setLinksPerRow,
 }: LinksSectionProps) => {
-  const { isDarkMode } = useTheme();
+  const { data } = useData();
+  const themeSettings = data.themeSettings || { theme: 'light', backgroundImage: null };
+  const { theme } = themeSettings;
+  
+  const isDarkMode = theme === 'dark';
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -718,82 +711,40 @@ const LinksSection = ({
   // Handle drag end for groups
   const handleGroupDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
     if (over && active.id !== over.id) {
-      setLinkGroups(currentGroups => {
-        const activeIndex = currentGroups.findIndex((g: LinkGroup) => g.id === active.id);
-        const overIndex = currentGroups.findIndex((g: LinkGroup) => g.id === over.id);
-        
-        return arrayMove(currentGroups, activeIndex, overIndex);
-      });
+      const oldIndex = linkGroups.findIndex(group => group.id === active.id);
+      const newIndex = linkGroups.findIndex(group => group.id === over.id);
+      const newGroups = arrayMove(linkGroups, oldIndex, newIndex);
+      setLinkGroups(newGroups);
     }
   };
 
   // Handle drag end for links within a group
   const handleLinkDragEnd = (event: DragEndEvent, groupId: string) => {
     const { active, over } = event;
-
-    // First check if we're moving links within the same group
     if (over && active.id !== over.id) {
-      const isOverALink = over.id.toString().startsWith('link-');
+      const newGroups = [...linkGroups];
+      const groupIndex = newGroups.findIndex(g => g.id === groupId);
+      const links = [...newGroups[groupIndex].links];
       
-      if (isOverALink) {
-        // Handle move within the same group
-        setLinkGroups(currentGroups => {
-          return currentGroups.map(group => {
-            if (group.id !== groupId) return group;
-            
-            const activeIndex = group.links.findIndex((l: QuickLink) => l.id === active.id);
-            const overIndex = group.links.findIndex((l: QuickLink) => l.id === over.id);
-            
-            return {
-              ...group,
-              links: arrayMove(group.links, activeIndex, overIndex)
-            };
-          });
-        });
-      } else {
-        // Handle move between groups - 'over' is a group
-        const targetGroupId = over.id.toString();
-        
-        // Extract data about the link we're moving
-        let linkToMove: QuickLink | undefined;
-        let sourceGroupId: string | undefined;
-        
-        // Find the link and its source group
-        linkGroups.forEach(group => {
-          const link = group.links.find(l => l.id === active.id);
-          if (link) {
-            linkToMove = link;
-            sourceGroupId = group.id;
-          }
-        });
-        
-        if (linkToMove && sourceGroupId && sourceGroupId !== targetGroupId) {
-          // Move link from source group to target group
-          setLinkGroups(currentGroups => {
-            return currentGroups.map(group => {
-              // Remove from source group
-              if (group.id === sourceGroupId) {
-                return {
-                  ...group,
-                  links: group.links.filter((l: QuickLink) => l.id !== active.id)
-                };
-              }
-              
-              // Add to target group
-              if (group.id === targetGroupId) {
-                return {
-                  ...group,
-                  links: [...group.links, linkToMove!]
-                };
-              }
-              
-              return group;
-            });
-          });
-        }
-      }
+      const oldIndex = links.findIndex(link => link.id === active.id);
+      const newIndex = links.findIndex(link => link.id === over.id);
+      
+      newGroups[groupIndex].links = arrayMove(links, oldIndex, newIndex);
+      setLinkGroups(newGroups);
+    }
+  };
+
+  // Fix the linksPerRow increment/decrement functions
+  const decrementLinksPerRow = () => {
+    if (linksPerRow > 1) {
+      setLinksPerRow(linksPerRow - 1);
+    }
+  };
+
+  const incrementLinksPerRow = () => {
+    if (linksPerRow < 6) {
+      setLinksPerRow(linksPerRow + 1);
     }
   };
 
@@ -855,7 +806,7 @@ const LinksSection = ({
               <div className="settings-input">
                 <div className="links-per-row-control">
                   <button 
-                    onClick={() => setLinksPerRow(prev => Math.max(1, prev - 1))}
+                    onClick={decrementLinksPerRow}
                     disabled={linksPerRow <= 1}
                     className="control-btn"
                   >
@@ -863,7 +814,7 @@ const LinksSection = ({
                   </button>
                   <span className="value-display">{linksPerRow}</span>
                   <button 
-                    onClick={() => setLinksPerRow(prev => Math.min(5, prev + 1))}
+                    onClick={incrementLinksPerRow}
                     disabled={linksPerRow >= 5}
                     className="control-btn"
                   >

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
 import { createPortal } from 'react-dom';
+import { useData } from '../../context/DataContext';
 import './SettingsPopup.css';
 import CloseIcon from '@mui/icons-material/Close';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -17,7 +17,11 @@ const SettingsPopup = ({
   isOpen,
   onClose
 }: SettingsPopupProps) => {
-  const { isDarkMode, toggleTheme, backgroundImage, setBackgroundImage } = useTheme();
+  const { data, updateThemeSettings, toggleTheme } = useData();
+  const themeSettings = data.themeSettings || { theme: 'light', backgroundImage: null };
+  const { theme, backgroundImage } = themeSettings;
+  
+  const isDarkMode = theme === 'dark';
   const [imageUrl, setImageUrl] = useState(backgroundImage || '');
   const [error, setError] = useState('');
   
@@ -28,7 +32,7 @@ const SettingsPopup = ({
   
   const applyBackgroundImage = () => {
     if (!imageUrl.trim()) {
-      setBackgroundImage(null);
+      updateThemeSettings({ backgroundImage: null });
       return;
     }
     
@@ -45,7 +49,7 @@ const SettingsPopup = ({
       // Try to validate URL is an image
       const img = new Image();
       img.onload = () => {
-        setBackgroundImage(imageUrl);
+        updateThemeSettings({ backgroundImage: imageUrl });
         setError('');
       };
       img.onerror = () => {
@@ -53,14 +57,14 @@ const SettingsPopup = ({
       };
       img.src = imageUrl;
     } else {
-      setBackgroundImage(imageUrl);
+      updateThemeSettings({ backgroundImage: imageUrl });
       setError('');
     }
   };
   
   const clearBackgroundImage = () => {
     setImageUrl('');
-    setBackgroundImage(null);
+    updateThemeSettings({ backgroundImage: null });
     setError('');
   };
   

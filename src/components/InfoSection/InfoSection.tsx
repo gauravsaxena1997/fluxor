@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './InfoSection.css';
-import { useTheme } from '../../context/ThemeContext';
+import { useData } from '../../context/DataContext';
 import SearchIcon from '@mui/icons-material/Search';
 
 interface InfoSectionProps {
@@ -8,7 +8,11 @@ interface InfoSectionProps {
 }
 
 const InfoSection = ({}: InfoSectionProps) => {
-  const { isDarkMode } = useTheme();
+  const { data } = useData();
+  const themeSettings = data.themeSettings || { theme: 'light', backgroundImage: null };
+  const { theme } = themeSettings;
+  
+  const isDarkMode = theme === 'dark';
   const [currentTime, setCurrentTime] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
