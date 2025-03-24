@@ -280,7 +280,6 @@
 
 .empty-group-message {
   width: 100%;
-  padding: 1rem;
   text-align: center;
   color: var(--text-secondary-light);
   font-style: italic;
@@ -451,35 +450,39 @@
 }
 
 /* Individual link item styling */
-.link-item, .quick-link {
+.quick-link {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   text-align: center;
-  padding: 12px 8px 38px;
+  padding: 12px 8px 12px; /* Reduced bottom padding for view mode */
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
   transition: all 0.2s ease;
   cursor: pointer;
   min-width: 100px;
-  min-height: 90px;
   text-decoration: none;
   color: var(--text-color);
 }
 
-.dark-theme .link-item, .dark-theme .quick-link {
+.quick-link.edit-mode {
+  padding-bottom: 38px; /* Extra space for the controls */
+  min-height: 90px; /* Original height for edit mode */
+}
+
+.dark-theme .quick-link {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
-.link-item:hover, .quick-link:hover {
+.quick-link:hover {
   background-color: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.dark-theme .link-item:hover, .dark-theme .quick-link:hover {
+.dark-theme .quick-link:hover {
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -861,7 +864,6 @@
 
 .empty-group-message {
   width: 100%;
-  padding: 1rem;
   text-align: center;
   color: var(--text-secondary-light);
   font-style: italic;
