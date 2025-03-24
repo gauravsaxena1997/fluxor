@@ -310,3 +310,13 @@ body, html {
   width: 100%;
   overflow: hidden;
 }
+
+/* Button focus styles - remove outlines */
+button:focus, 
+button:active,
+.icon-btn:focus,
+.icon-btn:active {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}

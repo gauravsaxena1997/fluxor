@@ -367,3 +367,21 @@
     max-width: 90%;
   }
 }
+
+/* Remove focus outlines on all buttons */
+button,
+input[type="button"],
+input[type="submit"] {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus,
+button:active,
+input[type="button"]:focus,
+input[type="button"]:active,
+input[type="submit"]:focus,
+input[type="submit"]:active {
+  outline: none;
+  box-shadow: none;
+}
