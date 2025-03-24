@@ -1,0 +1,262 @@
+/* Base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  height: 100%;
+  width: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow: hidden; /* Prevent scrolling on the body */
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrolling on the root element */
+}
+
+/* Theme variables */
+:root {
+  --bg-gradient-light: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --bg-gradient-dark: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  --text-color-light: #333;
+  --text-color-dark: #e2e8f0;
+  --text-secondary-light: #555;
+  --text-secondary-dark: #a0aec0;
+  --card-bg-light: rgba(255, 255, 255, 0.7);
+  --card-bg-dark: rgba(26, 32, 44, 0.7);
+  --card-hover-light: rgba(255, 255, 255, 0.9);
+  --card-hover-dark: rgba(45, 55, 72, 0.9);
+  --input-bg-light: white;
+  --input-bg-dark: #2d3748;
+  --accent-color: #4285f4;
+  --accent-color-hover: #3367d6;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --error-color: #e53e3e;
+  --success-color: #38a169;
+  --shadow-light: rgba(0, 0, 0, 0.1);
+  --shadow-dark: rgba(0, 0, 0, 0.3);
+}
+
+/* Light theme (default) */
+.light-theme {
+  background: var(--bg-gradient-light);
+  color: var(--text-color-light);
+}
+
+/* Dark theme */
+.dark-theme {
+  background: var(--bg-gradient-dark);
+  color: var(--text-color-dark);
+}
+
+/* Main container */
+.new-tab-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  color: #333;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-theme {
+  background-color: #1a202c;
+  color: #e2e8f0;
+}
+
+/* Content wrapper - Always in column direction with new layout */
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* Info section takes 20% of height */
+.info-section {
+  height: 20%;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+}
+
+/* Links section takes remaining 85% height since info is now 15% */
+.links-section {
+  height: 85%;
+  overflow-y: auto;
+  padding: 0; /* Removed unnecessary padding */
+  position: relative;
+}
+
+/* Desktop layout (> 768px) */
+@media (min-width: 768px) {
+  /* For desktop, info section layout */
+  .info-section {
+    flex-direction: row;
+  }
+  
+  .info-section-content {
+    display: flex;
+    width: 100%;
+  }
+  
+  .time-date-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+  }
+  
+  .search-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+  }
+  
+  /* For desktop, links section is 50% width */
+  .links-section {
+    width: 50%;
+  }
+  
+  .links-section-header {
+    width: 50%;
+  }
+}
+
+/* Mobile layout (< 768px) */
+@media (max-width: 767px) {
+  /* For mobile, info section layout */
+  .info-section {
+    flex-direction: row;
+  }
+  
+  .info-section-content {
+    display: flex;
+    width: 100%;
+  }
+  
+  .time-container, .date-container, .search-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+  }
+  
+  /* For mobile, links section is 100% width */
+  .links-section {
+    width: 100%;
+  }
+  
+  .links-section-header {
+    width: 100%;
+  }
+}
+
+/* App controls */
+.app-controls {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 1000; /* Increased z-index to ensure visibility */
+  background-color: rgba(255, 255, 255, 0.3); /* Added subtle background */
+  padding: 0.5rem;
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  height: auto; /* Ensure it doesn't take full height */
+  width: auto; /* Ensure it doesn't take full width */
+}
+
+.dark-theme .app-controls {
+  background-color: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.settings-toggle-btn,
+.edit-links-toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem; /* Increased size for better visibility */
+  cursor: pointer;
+  color: var(--text-color-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.dark-theme .settings-toggle-btn,
+.dark-theme .edit-links-toggle-btn {
+  color: var(--text-color-dark);
+}
+
+.settings-toggle-btn:hover,
+.edit-links-toggle-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: scale(1.1);
+}
+
+.dark-theme .settings-toggle-btn:hover,
+.dark-theme .edit-links-toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+/* Links section header with edit button */
+.links-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: var(--card-bg-light);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 5px var(--shadow-light);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.dark-theme .links-section-header {
+  background-color: var(--card-bg-dark);
+  box-shadow: 0 2px 5px var(--shadow-dark);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .content-wrapper {
+    flex-direction: column;
+  }
+
+  .info-section {
+    height: 15%;
+  }
+
+  .links-section {
+    height: 85%;
+    width: 100%;
+    margin-left: 0;
+  }
+}

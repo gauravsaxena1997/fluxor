@@ -1,0 +1,242 @@
+/* Settings Popup */
+.settings-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.settings-popup.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.settings-popup-content {
+  background-color: #fff;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s;
+  transform: scale(0.95);
+}
+
+.settings-popup.active .settings-popup-content {
+  transform: scale(1);
+}
+
+/* Dark theme styling */
+.settings-popup.dark-theme .settings-popup-content {
+  background-color: #333;
+  color: #f0f0f0;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.dark-theme .settings-header {
+  border-bottom-color: #555;
+}
+
+.settings-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.settings-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #777;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+
+.settings-close-btn:hover {
+  color: #ff5555;
+}
+
+.dark-theme .settings-close-btn {
+  color: #aaa;
+}
+
+.dark-theme .settings-close-btn:hover {
+  color: #ff7777;
+}
+
+.settings-section {
+  margin-bottom: 25px;
+}
+
+.settings-section h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+/* Theme toggle styling */
+.theme-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  background-color: #f5f5f5;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.dark-theme .theme-option {
+  background-color: #444;
+}
+
+.theme-option.active {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.1);
+}
+
+.dark-theme .theme-option.active {
+  border-color: #81a9ff;
+  background-color: rgba(129, 169, 255, 0.15);
+}
+
+.theme-icon {
+  color: #ffc107;
+}
+
+/* Layout selector styling */
+.toggle-selector {
+  display: flex;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.dark-theme .toggle-selector {
+  background-color: #444;
+}
+
+.toggle-option {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 80px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.toggle-option:not(.active):hover {
+  background-color: #e5e5e5;
+}
+
+.dark-theme .toggle-option:not(.active):hover {
+  background-color: #555;
+}
+
+.toggle-option.active {
+  background-color: #4285f4;
+  color: white;
+}
+
+/* Links per row control styling */
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dark-theme .setting-row {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.setting-row:last-child {
+  border-bottom: none;
+}
+
+.setting-label {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.setting-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f0f0f0;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dark-theme .control-btn {
+  background-color: #444;
+  color: #ddd;
+}
+
+.control-btn:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.dark-theme .control-btn:hover:not(:disabled) {
+  background-color: #555;
+}
+
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.value-display {
+  font-weight: 600;
+  font-size: 1.1rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Make sure SVG icons have proper size */
+.settings-popup svg {
+  width: 24px;
+  height: 24px;
+}
