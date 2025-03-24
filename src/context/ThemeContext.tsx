@@ -6,6 +6,8 @@ interface ThemeContextType {
   theme: ThemeType;
   toggleTheme: () => void;
   isDarkMode: boolean;
+  backgroundImage: string | null;
+  setBackgroundImage: (url: string | null) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -21,6 +23,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     return (savedTheme as ThemeType) || 'light';
   });
 
+  // Get initial background image from localStorage
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(() => {
+    const savedBgImage = localStorage.getItem('fluxor-bg-image');
+    return savedBgImage || null;
+  });
+
   const isDarkMode = theme === 'dark';
 
   // Update localStorage and document body class when theme changes
@@ -29,6 +37,15 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     document.body.className = theme === 'dark' ? 'dark-theme' : 'light-theme';
   }, [theme]);
 
+  // Update localStorage and apply background image when it changes
+  useEffect(() => {
+    if (backgroundImage) {
+      localStorage.setItem('fluxor-bg-image', backgroundImage);
+    } else {
+      localStorage.removeItem('fluxor-bg-image');
+    }
+  }, [backgroundImage]);
+
   const toggleTheme = () => {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
   };
@@ -36,7 +53,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const value = {
     theme,
     toggleTheme,
-    isDarkMode
+    isDarkMode,
+    backgroundImage,
+    setBackgroundImage
   };
 
   return (

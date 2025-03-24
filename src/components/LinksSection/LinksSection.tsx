@@ -830,82 +830,86 @@ const LinksSection = ({
         </button>
       </div>
       
-      {/* Edit controls appear below header when in edit mode */}
-      {isEditMode && (
-        <div className="edit-controls-panel">
-          <div className="settings-row">
-            <div className="settings-label">Display Mode</div>
-            <div className="settings-input">
-              <ToggleSelector
-                options={[
-                  { value: 'icon-only', label: 'Icons Only' },
-                  { value: 'name-only', label: 'Names Only' },
-                  { value: 'both', label: 'Both' },
-                ]}
-                value={linkDisplayMode}
-                onChange={(value: string) => setLinkDisplayMode(value as LinkDisplayMode)}
-              />
+      {/* Separate scrollable content container */}
+      <div className="links-section-content">
+        {/* Edit controls appear below header when in edit mode */}
+        {isEditMode && (
+          <div className="edit-controls-panel">
+            <div className="settings-row">
+              <div className="settings-label">Display Mode</div>
+              <div className="settings-input">
+                <ToggleSelector
+                  options={[
+                    { value: 'icon-only', label: 'Icons Only' },
+                    { value: 'name-only', label: 'Names Only' },
+                    { value: 'both', label: 'Both' },
+                  ]}
+                  value={linkDisplayMode}
+                  onChange={(value: string) => setLinkDisplayMode(value as LinkDisplayMode)}
+                />
+              </div>
+            </div>
+            
+            <div className="settings-row">
+              <div className="settings-label">Links Per Row</div>
+              <div className="settings-input">
+                <div className="links-per-row-control">
+                  <button 
+                    onClick={() => setLinksPerRow(prev => Math.max(1, prev - 1))}
+                    disabled={linksPerRow <= 1}
+                    className="control-btn"
+                  >
+                    <RemoveIcon />
+                  </button>
+                  <span className="value-display">{linksPerRow}</span>
+                  <button 
+                    onClick={() => setLinksPerRow(prev => Math.min(5, prev + 1))}
+                    disabled={linksPerRow >= 5}
+                    className="control-btn"
+                  >
+                    <AddIcon />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div className="settings-row">
-            <div className="settings-label">Links Per Row</div>
-            <div className="settings-input links-per-row-control">
-              <button 
-                className="control-btn" 
-                onClick={() => linksPerRow > 1 && setLinksPerRow(linksPerRow - 1)}
-                disabled={linksPerRow <= 1}
-                aria-label="Decrease links per row"
-              >
-                <RemoveIcon />
-              </button>
-              <span className="value-display">{linksPerRow}</span>
-              <button 
-                className="control-btn" 
-                onClick={() => linksPerRow < 5 && setLinksPerRow(linksPerRow + 1)}
-                disabled={linksPerRow >= 5}
-                aria-label="Increase links per row"
-              >
-                <AddIcon />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      <div className="links-container">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleGroupDragEnd}
-        >
-          <SortableContext
-            items={linkGroups.map(group => group.id)}
-            strategy={verticalListSortingStrategy}
+        )}
+        
+        {/* Links content area */}
+        <div className="links-container">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleGroupDragEnd}
           >
-            {linkGroups.map(group => (
-              <SortableGroup
-                key={group.id}
-                group={group}
-                isEditMode={isEditMode}
-                onGroupEdit={handleGroupEdit}
-                onGroupDelete={handleGroupDelete}
-                onLinkAdd={(groupId) => {
-                  setActiveLinkGroupId(groupId);
-                  setIsLinkEdit(false);
-                  setActiveLink(null);
-                  setIsLinkModalOpen(true);
-                }}
-                onLinkEdit={handleEditLink}
-                onLinkDelete={handleLinkDelete}
-                onLinkClick={handleLinkClick}
-                linkDisplayMode={linkDisplayMode}
-                onLinkDragEnd={handleLinkDragEnd}
-                linksPerRow={linksPerRow}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
+            <SortableContext 
+              items={linkGroups.map(group => group.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {linkGroups.map(group => (
+                <SortableGroup
+                  key={group.id}
+                  group={group}
+                  isEditMode={isEditMode}
+                  onGroupEdit={handleGroupEdit}
+                  onGroupDelete={handleGroupDelete}
+                  onLinkAdd={(groupId) => {
+                    setActiveLinkGroupId(groupId);
+                    setIsLinkEdit(false);
+                    setActiveLink(null);
+                    setIsLinkModalOpen(true);
+                  }}
+                  onLinkEdit={handleEditLink}
+                  onLinkDelete={handleLinkDelete}
+                  onLinkClick={handleLinkClick}
+                  linkDisplayMode={linkDisplayMode}
+                  onLinkDragEnd={handleLinkDragEnd}
+                  linksPerRow={linksPerRow}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        </div>
       </div>
 
       {/* Link Modal for Add/Edit */}

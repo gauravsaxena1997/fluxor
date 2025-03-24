@@ -6,6 +6,8 @@
   max-width: 50%; /* Keep max-width constraint */
   margin: 15px; /* Added margin to top and left */
   padding: 0;
+  height: calc(100% - 30px); /* Account for the margins */
+  overflow: hidden; /* Prevent overall section from scrolling */
 }
 
 /* Header styling */
@@ -13,17 +15,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(60, 60, 60, 0.9);
-  border-radius: 8px 8px 0 0;
+  background: transparent; /* Remove background */
   width: 100%;
   box-sizing: border-box;
+  z-index: 10; /* Ensure header stays above content */
 }
 
 .dark-theme .links-section-header {
-  background: rgba(30, 30, 30, 0.9);
+  background: transparent; /* Remove background in dark mode too */
 }
 
 .links-section-header h3 {
@@ -31,8 +32,18 @@
   font-size: 1.2rem;
   font-weight: 500;
   letter-spacing: -0.5px;
-  color: #fff;
+  color: inherit; /* Use inherited color instead of white */
   white-space: nowrap;
+}
+
+/* Content container - scrollable section */
+.links-section-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 50px); /* Header height approximately 50px */
 }
 
 /* Header group creation form */
@@ -128,15 +139,30 @@
 }
 
 .settings-label {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  color: var(--text-color);
-  white-space: nowrap;
-  padding-left: 4px;
+  margin-bottom: 0.5rem;
+  color: var(--text-color-light);
 }
 
-.dark-theme .settings-row {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+.dark-theme .settings-label {
+  color: var(--text-color-dark);
+}
+
+/* Improved text visibility for light theme with background image */
+.light-theme.has-bg-image .settings-label,
+.light-theme.has-bg-image .link-name,
+.light-theme.has-bg-image .group-name {
+  color: #222;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  font-weight: 500;
+}
+
+.light-theme.has-bg-image .group-name {
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
 }
 
 .settings-input {
@@ -704,8 +730,21 @@
 
 .link-form-label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
   font-weight: 500;
+  color: var(--text-color-light);
+}
+
+.dark-theme .link-form-label {
+  color: var(--text-color-dark);
+}
+
+/* Improved text visibility for labels in light theme with background image */
+.light-theme.has-bg-image .link-form-label,
+.light-theme.has-bg-image .settings-label {
+  color: #222;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.9);
+  font-weight: 600;
 }
 
 .link-form-input {

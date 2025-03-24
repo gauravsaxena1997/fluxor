@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
 import './App.css';
+import './light-mode-fixes.css';
 import { useTheme } from './context/ThemeContext';
 
 // Import our modular components
@@ -27,10 +28,15 @@ type LinkDisplayMode = 'icon-only' | 'name-only' | 'both';
 
 function App() {
   // Get theme from context
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, backgroundImage } = useTheme();
   
   // UI state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  
+  // Clear existing saved links on first load
+  useEffect(() => {
+    localStorage.removeItem('linkGroups');
+  }, []);
   
   // Link groups state
   const [linkGroups, setLinkGroups] = useState<LinkGroup[]>(() => {
@@ -43,29 +49,39 @@ function App() {
     return [
       {
         id: '1',
-        name: 'Social Media',
+        name: 'Basics',
         links: [
-          { id: '1-1', name: 'Twitter', url: 'https://twitter.com', icon: 'twitter' },
-          { id: '1-2', name: 'Facebook', url: 'https://facebook.com', icon: 'facebook' },
-          { id: '1-3', name: 'LinkedIn', url: 'https://linkedin.com', icon: 'linkedin' },
+          { id: '1-1', name: 'Gmail', url: 'https://gmail.com', icon: 'email' },
+          { id: '1-2', name: 'Calendar', url: 'https://calendar.google.com', icon: 'event' },
+          { id: '1-3', name: 'YouTube', url: 'https://youtube.com', icon: 'youtube' },
+          { id: '1-4', name: 'LinkedIn', url: 'https://linkedin.com', icon: 'linkedin' },
+          { id: '1-5', name: 'Drive', url: 'https://drive.google.com', icon: 'folder' },
         ]
       },
       {
         id: '2',
-        name: 'Productivity',
+        name: 'Job',
         links: [
-          { id: '2-1', name: 'Gmail', url: 'https://gmail.com', icon: 'email' },
-          { id: '2-2', name: 'Google Drive', url: 'https://drive.google.com', icon: 'folder' },
-          { id: '2-3', name: 'Calendar', url: 'https://calendar.google.com', icon: 'event' },
+          { id: '2-1', name: 'Naukri', url: 'https://naukri.com', icon: 'work' },
+          { id: '2-2', name: 'Instahire', url: 'https://instahire.com', icon: 'person_search' },
+          { id: '2-3', name: 'FoundIt', url: 'https://foundit.in', icon: 'search' },
         ]
       },
       {
         id: '3',
-        name: 'Entertainment',
+        name: 'Dev',
         links: [
-          { id: '3-1', name: 'YouTube', url: 'https://youtube.com', icon: 'youtube' },
-          { id: '3-2', name: 'Netflix', url: 'https://netflix.com', icon: 'movie' },
-          { id: '3-3', name: 'Spotify', url: 'https://spotify.com', icon: 'music_note' },
+          { id: '3-1', name: 'GitHub', url: 'https://github.com', icon: 'github' },
+          { id: '3-2', name: 'CodeSandbox', url: 'https://codesandbox.io', icon: 'dashboard' },
+        ]
+      },
+      {
+        id: '4',
+        name: 'AI',
+        links: [
+          { id: '4-1', name: 'ChatGPT', url: 'https://chat.openai.com', icon: 'chat' },
+          { id: '4-2', name: 'Google AI Studio', url: 'https://makersuite.google.com', icon: 'auto_awesome' },
+          { id: '4-3', name: 'Cursor', url: 'https://cursor.sh', icon: 'edit' },
         ]
       }
     ];
@@ -98,8 +114,19 @@ function App() {
     localStorage.setItem('linksPerRow', linksPerRow.toString());
   }, [linksPerRow]);
 
+  // Create container style with background image if present
+  const containerStyle = backgroundImage ? {
+    backgroundImage: `url(${backgroundImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  } : {};
+
   return (
-    <div className={`new-tab-container ${isDarkMode ? 'dark-theme' : 'light-theme'}`}>
+    <div 
+      className={`new-tab-container ${isDarkMode ? 'dark-theme' : 'light-theme'} ${backgroundImage ? 'has-bg-image' : ''}`}
+      style={containerStyle}
+    >
       {/* App Controls - Settings and Edit Icons */}
       <div className="app-controls">
         <button 
