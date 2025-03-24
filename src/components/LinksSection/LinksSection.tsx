@@ -30,6 +30,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import LaunchIcon from '@mui/icons-material/Launch';
 
 // Components
 import ToggleSelector from '../ToggleSelector';
@@ -296,11 +297,39 @@ const SortableGroup = ({
   const [isEditing, setIsEditing] = useState(false);
   const [groupName, setGroupName] = useState(group.name);
   
+  // Function to open all links in the group in new tabs
+  const openAllLinks = () => {
+    // Most browsers block multiple popups, so we need to handle this differently
+    if (group.links.length === 0) return;
+    
+    // Create an invisible container for links
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.top = '-1000px';
+    tempContainer.style.left = '-1000px';
+    document.body.appendChild(tempContainer);
+    
+    // Create and click each link
+    group.links.forEach(link => {
+      const a = document.createElement('a');
+      a.href = link.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      tempContainer.appendChild(a);
+      a.click();
+    });
+    
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(tempContainer);
+    }, 100);
+  };
+  
   return (
     <div 
       ref={setNodeRef} 
       style={style} 
-      className={`link-group ${isDragging ? 'is-dragging' : ''}`}
+      className={`link-group ${isDragging ? 'is-dragging' : ''} ${group.links.length === 0 ? 'empty-group' : ''}`}
     >
       <div className="group-header">
         {isEditMode && (
@@ -323,44 +352,57 @@ const SortableGroup = ({
           <h4 className="group-name">{group.name}</h4>
         )}
         
-        {isEditMode && (
-          <div className="group-actions">
+        <div className="group-actions">
+          {!isEditMode && group.links.length > 0 && (
             <button 
-              onClick={() => setIsEditing(true)} 
-              className="icon-btn edit-btn"
-              aria-label="Edit group name"
-              style={{ display: isEditing ? 'none' : 'flex' }}
+              onClick={openAllLinks}
+              className="icon-btn open-all-btn"
+              aria-label="Open all links in this group"
+              title="Open all links in this group"
             >
-              <DriveFileRenameOutlineIcon />
+              <LaunchIcon fontSize="small" />
             </button>
-            <button 
-              onClick={() => {
-                onGroupEdit(group.id, groupName);
-                setIsEditing(false);
-              }}
-              className="icon-btn save-btn"
-              aria-label="Save group name"
-              style={{ display: isEditing ? 'flex' : 'none' }}
-            >
-              <CheckIcon />
-            </button>
-            <button 
-              onClick={() => onLinkAdd(group.id)} 
-              className="icon-btn add-btn"
-              aria-label="Add link to group"
-            >
-              <AddIcon />
-            </button>
-            
-            <button 
-              onClick={() => onGroupDelete(group.id)} 
-              className="icon-btn delete-btn"
-              aria-label="Delete group"
-            >
-              <DeleteIcon />
-            </button>
-          </div>
-        )}
+          )}
+          
+          {isEditMode && (
+            <>
+              <button 
+                onClick={() => setIsEditing(true)} 
+                className="icon-btn edit-btn"
+                aria-label="Edit group name"
+                style={{ display: isEditing ? 'none' : 'flex' }}
+              >
+                <DriveFileRenameOutlineIcon />
+              </button>
+              <button 
+                onClick={() => {
+                  onGroupEdit(group.id, groupName);
+                  setIsEditing(false);
+                }}
+                className="icon-btn save-btn"
+                aria-label="Save group name"
+                style={{ display: isEditing ? 'flex' : 'none' }}
+              >
+                <CheckIcon />
+              </button>
+              <button 
+                onClick={() => onLinkAdd(group.id)} 
+                className="icon-btn add-btn"
+                aria-label="Add link to group"
+              >
+                <AddIcon />
+              </button>
+              
+              <button 
+                onClick={() => onGroupDelete(group.id)} 
+                className="icon-btn delete-btn"
+                aria-label="Delete group"
+              >
+                <DeleteIcon />
+              </button>
+            </>
+          )}
+        </div>
       </div>
       
       <DndContext
@@ -376,8 +418,8 @@ const SortableGroup = ({
         onDragEnd={(event) => onLinkDragEnd(event, group.id)}
       >
         <div 
-          className="group-links" 
-          data-links-per-row={linksPerRow}
+          className={`group-links ${group.links.length === 0 ? 'empty-group-container' : ''}`}
+          data-links-per-row={group.links.length > 0 ? linksPerRow : undefined}
           data-group-id={group.id}
         >
           {!isEditMode && group.links.length === 0 ? (
@@ -775,7 +817,7 @@ const LinksSection = ({
               disabled={!groupNameInput.trim()}
               title="Create new group"
             >
-              <AddIcon fontSize="small" />
+              <AddIcon />
             </button>
           </div>
         )}

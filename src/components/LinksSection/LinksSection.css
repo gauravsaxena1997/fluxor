@@ -3,11 +3,9 @@
   display: flex;
   flex-direction: column;
   width: 50%; /* Set back to 50% width as intended */
-  max-width: 600px; /* Keep max-width constraint */
-  margin: 0;
-  padding: 0.5rem;
-  height: 100%;
-  overflow-y: auto;
+  max-width: 50%; /* Keep max-width constraint */
+  margin: 15px; /* Added margin to top and left */
+  padding: 0;
 }
 
 /* Header styling */
@@ -107,8 +105,6 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  max-height: 70vh; /* Add a max height with scrolling if needed */
-  overflow-y: auto;
 }
 
 .dark-theme .edit-controls-panel {
@@ -263,10 +259,42 @@
   padding: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%; /* Make groups take full width */
+  box-sizing: border-box;
+}
+
+/* Add a minimum height to empty groups */
+.link-group.empty-group {
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+}
+
+.link-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.empty-group-message {
+  width: 100%;
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-secondary-light);
+  font-style: italic;
 }
 
 .dark-theme .link-group {
   background: var(--card-bg-dark);
+}
+
+.links-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 0.75rem;
 }
 
 /* Group header styling */
@@ -295,7 +323,52 @@
 
 .group-actions {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .icon-btn {
+  color: var(--text-color-dark);
+}
+
+.icon-btn.edit-btn:hover {
+  color: #4db6ac;
+}
+
+.icon-btn.delete-btn:hover {
+  color: #f44336;
+}
+
+.icon-btn.add-btn:hover {
+  color: #66bb6a;
+}
+
+.icon-btn.open-all-btn:hover {
+  color: #42a5f5;
+  background: rgba(66, 165, 245, 0.15);
+}
+
+.icon-btn.save-btn:hover {
+  color: #4caf50;
 }
 
 .group-action-btn {
@@ -742,6 +815,49 @@
 
 .dark-theme .link-modal-cancel:hover {
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Group links styling */
+.group-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  padding: 8px;
+}
+
+.group-links[data-links-per-row='1'] {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+.group-links[data-links-per-row='2'] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.group-links[data-links-per-row='3'] {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.group-links[data-links-per-row='4'] {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.group-links[data-links-per-row='5'] {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+/* When group has no links, don't use grid layout */
+.empty-group-container {
+  display: block !important; /* Override the grid display */
+  grid-template-columns: none !important;
+}
+
+.empty-group-message {
+  width: 100%;
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-secondary-light);
+  font-style: italic;
+  font-size: 0.9rem;
 }
 
 /* Responsive adjustments */
