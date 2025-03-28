@@ -1,0 +1,295 @@
+/* Focus Warden Popup */
+.focus-warden-popup {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40%;
+  max-width: 500px;
+  background: var(--modal-bg);
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow-y: auto;
+  padding: 25px;
+}
+
+.focus-warden-popup.active {
+  transform: translateX(0);
+}
+
+:global(.dark-theme) .focus-warden-popup {
+  background: var(--modal-bg);
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.focus-warden-popup-content {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.focus-warden-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.focus-warden-popup-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+
+.focus-warden-popup-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+
+.focus-warden-popup-close:hover {
+  color: var(--accent-color);
+}
+
+/* Tabs */
+.focus-warden-popup-tabs {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+/* Site list */
+.focus-warden-popup-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.focus-warden-popup-empty {
+  text-align: center;
+  color: var(--text-color-light);
+  font-style: italic;
+  padding: 20px 0;
+}
+
+.focus-warden-popup-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.focus-warden-popup-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+:global(.dark-theme) .focus-warden-popup-item {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.focus-warden-popup-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+:global(.dark-theme) .focus-warden-popup-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.site-favicon {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.site-favicon img {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.site-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.site-url {
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-color-light);
+}
+
+.site-type svg {
+  font-size: 1rem;
+}
+
+.site-type.permanent svg {
+  color: #4db6ac;
+}
+
+.site-type.time-limit svg {
+  color: #ff9800;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-color-light);
+  cursor: pointer;
+  padding: 6px;
+  margin-left: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  background-color: rgba(211, 47, 47, 0.1);
+  color: #d32f2f;
+}
+
+/* Confirmation dialog */
+.focus-warden-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.focus-warden-confirm-dialog {
+  background: var(--modal-bg);
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.focus-warden-confirm-dialog h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: var(--text-color);
+}
+
+.focus-warden-confirm-dialog p {
+  margin-bottom: 24px;
+  color: var(--text-color);
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.confirm-actions button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-actions .cancel-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.confirm-actions .cancel-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.confirm-actions .delete-btn {
+  background: #d32f2f;
+  border: none;
+  color: white;
+  margin-left: 0;
+  border-radius: 4px;
+  padding: 8px 16px;
+}
+
+.confirm-actions .delete-btn:hover {
+  background: #b71c1c;
+}
+
+/* Scrollbar Styling */
+.focus-warden-popup-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.focus-warden-popup-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.focus-warden-popup-body::-webkit-scrollbar-thumb {
+  background: rgba(77, 182, 172, 0.3);
+  border-radius: 4px;
+}
+
+.focus-warden-popup-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(77, 182, 172, 0.5);
+}
+
+/* Tab styling overrides */
+.focus-warden-popup :global(.toggle-selector-group) {
+  width: 100%;
+}
+
+.focus-warden-popup :global(.toggle-selector-option.active) {
+  background-color: var(--accent-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .focus-warden-popup {
+    width: 80%;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .focus-warden-popup {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .focus-warden-popup-stats {
+    flex-direction: column;
+    gap: 10px;
+  }
+} 

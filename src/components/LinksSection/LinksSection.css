@@ -2,13 +2,12 @@
 .links-section {
   display: flex;
   flex-direction: column;
-  width: 50%; /* Set back to 50% width as intended */
-  max-width: 50%; /* Keep max-width constraint */
-  margin: 15px; /* Added margin to top and left */
-  padding: 0;
-  height: calc(100% - 30px); /* Account for the margins */
-  overflow: hidden; /* Prevent overall section from scrolling */
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
   background-color: transparent;
+  padding: 0;
 }
 
 /* Header styling */
@@ -18,10 +17,10 @@
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--border-color);
-  background: transparent; /* Remove background */
+  background: transparent;
   width: 100%;
   box-sizing: border-box;
-  z-index: 10; /* Ensure header stays above content */
+  z-index: 10;
 }
 
 .dark-theme .links-section-header {

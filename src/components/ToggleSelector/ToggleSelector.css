@@ -6,6 +6,48 @@
   width: fit-content;
 }
 
+/* Size variants */
+.toggle-selector-group.small {
+  font-size: 0.75rem;
+}
+
+.toggle-selector-group.small .toggle-selector-option {
+  padding: 4px 10px;
+  min-width: 70px;
+}
+
+.toggle-selector-group.small .toggle-selector-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.toggle-selector-group.medium {
+  font-size: 0.875rem;
+}
+
+.toggle-selector-group.large {
+  font-size: 1rem;
+}
+
+.toggle-selector-group.large .toggle-selector-option {
+  padding: 10px 20px;
+  min-width: 120px;
+}
+
+.toggle-selector-group.large .toggle-selector-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Block display (full width) */
+.toggle-selector-group.block {
+  width: 100%;
+}
+
+.toggle-selector-group.block .toggle-selector-option {
+  flex: 1;
+}
+
 :global(.dark-theme) .toggle-selector-group {
   background-color: rgba(255, 255, 255, 0.1);
 }

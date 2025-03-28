@@ -7,6 +7,7 @@ import { useData } from './context/DataContext';
 import InfoSection from './components/InfoSection/InfoSection';
 import LinksSection from './components/LinksSection/LinksSection';
 import SettingsPopup from './components/SettingsPopup/SettingsPopup';
+import { FocusWarden } from './components/FocusWarden/FocusWarden';
 
 function App() {
   // Get all data from context
@@ -66,9 +67,9 @@ function App() {
             setLinksPerRow={(count) => updateLinkSettings({ linksPerRow: count })}
           />
           
-          {/* Future features will go here (right 50% of the screen) */}
-          <div className="future-features-area">
-            {/* This area is intentionally left empty for future features */}
+          {/* Widgets area (right 50% of the screen) */}
+          <div className="widgets">
+            <FocusWarden className="focus-warden-widget" />
           </div>
         </div>
       </div>

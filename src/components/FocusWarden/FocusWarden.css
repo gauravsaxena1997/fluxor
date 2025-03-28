@@ -1,0 +1,281 @@
+.focus-warden {
+  background: transparent;
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--text-color);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Widget Title */
+.widget-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.widget-icon {
+  color: var(--accent-color);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.widget-title-text {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: var(--text-color);
+  margin: 0 !important;
+}
+
+/* Stats Row */
+.stats-row {
+  display: flex;
+  width: 100%;
+  margin-bottom: 10px;
+  background: rgba(77, 182, 172, 0.08);
+  border-radius: 6px;
+  padding: 4px 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  padding: 3px 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+.stat-icon {
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  margin-right: 4px;
+}
+
+.stat-count {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-color);
+  margin-right: 4px;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary-light);
+}
+
+.stat-divider {
+  height: 20px;
+  width: 1px;
+  background-color: rgba(77, 182, 172, 0.3);
+  margin: 0 4px;
+}
+
+:global(.dark-theme) .stat-label {
+  color: var(--text-secondary-dark);
+}
+
+:global(.dark-theme) .stats-row {
+  background: rgba(77, 182, 172, 0.15);
+}
+
+:global(.dark-theme) .stat-divider {
+  background-color: rgba(77, 182, 172, 0.4);
+}
+
+/* URL Input */
+.url-input-row {
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.input-icon {
+  color: var(--accent-color);
+  font-size: 1.1rem;
+}
+
+.add-icon {
+  cursor: pointer;
+  color: var(--accent-color);
+}
+
+.add-icon:hover {
+  color: var(--accent-hover);
+}
+
+/* Type and Time Limit Row */
+.type-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+/* Override ToggleSelector styles for consistency */
+.focus-warden :global(.toggle-selector-group) {
+  flex-shrink: 0;
+  background-color: rgba(77, 182, 172, 0.1);
+}
+
+.focus-warden :global(.toggle-selector-option) {
+  min-width: auto;
+  font-size: inherit;
+  gap: 4px;
+}
+
+.focus-warden :global(.toggle-selector-option.active) {
+  background-color: var(--accent-color);
+}
+
+.focus-warden :global(.toggle-selector-icon) {
+  font-size: 0.9rem;
+}
+
+.time-limit-input {
+  width: 120px;
+  min-width: 0;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Actions Row */
+.actions-row {
+  display: flex;
+  margin-top: auto;
+  gap: 6px;
+}
+
+.manage-sites-btn {
+  color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  font-size: 0.9rem !important;
+  padding: 6px 12px !important;
+  width: 100%;
+}
+
+.manage-sites-btn:hover {
+  background: rgba(77, 182, 172, 0.1) !important;
+}
+
+/* MUI Overrides */
+.focus-warden .MuiTextField-root {
+  background: var(--input-bg);
+  border-radius: 4px;
+}
+
+.focus-warden .MuiTextField-root .MuiOutlinedInput-root {
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.focus-warden .MuiTextField-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-color);
+}
+
+.focus-warden .MuiTextField-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--accent-color);
+}
+
+.focus-warden .MuiTextField-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--accent-color);
+}
+
+.focus-warden .MuiIconButton-root {
+  color: var(--accent-color);
+  padding: 6px;
+}
+
+.focus-warden .MuiIconButton-root:hover {
+  background: rgba(77, 182, 172, 0.1);
+}
+
+.focus-warden .MuiButton-contained {
+  background: var(--accent-color);
+  font-size: 0.9rem !important;
+  padding: 6px 12px !important;
+}
+
+.focus-warden .MuiButton-contained:hover {
+  background: var(--accent-hover);
+}
+
+/* Helper text styling */
+.focus-warden .MuiFormHelperText-root {
+  font-size: 0.75rem;
+  margin: 4px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Fix for input padding */
+.focus-warden .MuiOutlinedInput-root {
+  padding-left: 8px;
+}
+
+/* Fix for MUI input adornments */
+.focus-warden .MuiInputAdornment-root {
+  margin-right: 0;
+  max-height: 100%;
+}
+
+/* Fix for input field overflow */
+.focus-warden .MuiFormControl-root {
+  min-height: 0;
+  margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .focus-warden {
+    padding: 10px;
+  }
+  
+  .url-input-row,
+  .type-row,
+  .stats-row {
+    margin-bottom: 10px;
+  }
+  
+  .widget-title {
+    margin-bottom: 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .focus-warden :global(.toggle-selector-option) {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+  }
+  
+  .focus-warden :global(.toggle-selector-icon) {
+    font-size: 0.8rem;
+  }
+  
+  .manage-sites-btn {
+    font-size: 0.8rem !important;
+    padding: 4px 8px !important;
+  }
+  
+  .time-limit-input {
+    width: 90px;
+    margin-left: 0;
+  }
+  
+  .widget-title-text {
+    font-size: 1rem !important;
+  }
+  
+  .type-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+} 

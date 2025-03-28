@@ -28,7 +28,7 @@ const SettingsPopup = ({
   const [error, setError] = useState('');
   const [accentColorInput, setAccentColorInput] = useState(accentColor || '#4db6ac');
   const [colorError, setColorError] = useState('');
-  const timeoutRef = useRef<number | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Clear timeout on unmount
   useEffect(() => {
@@ -133,6 +133,13 @@ const SettingsPopup = ({
     }
   };
   
+  const handleClose = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    onClose();
+  };
+  
   if (!isOpen) return null;
   
   const modalContent = (
@@ -142,7 +149,7 @@ const SettingsPopup = ({
           <h2>Settings</h2>
           <button 
             className="settings-close-btn" 
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close settings"
           >
             <CloseIcon />

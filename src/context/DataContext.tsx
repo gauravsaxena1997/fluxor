@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { BlockedSite } from '../components/FocusWarden/types';
 
 // Storage key for all application data
 const STORAGE_KEY = 'flux';
@@ -20,6 +21,13 @@ interface LinkGroup {
 type LinkDisplayMode = 'icon-only' | 'name-only' | 'both';
 type ThemeType = 'light' | 'dark';
 
+// Define widgets data structure
+interface WidgetsData {
+  focusWarden?: {
+    blockedSites: BlockedSite[];
+  };
+}
+
 // Define the structure for all application data
 interface AppData {
   themeSettings: {
@@ -32,6 +40,7 @@ interface AppData {
     linksPerRow: number;
   };
   linkGroups: LinkGroup[];
+  widgets: WidgetsData;
 }
 
 // Create default data
@@ -80,11 +89,16 @@ const defaultData: AppData = {
       links: [
         { id: '4-1', name: 'ChatGPT', url: 'https://chat.openai.com', icon: 'chat' },
         { id: '4-2', name: 'Google AI Studio', url: 'https://makersuite.google.com', icon: 'auto_awesome' },
-        { id: '4-2', name: 'DeepSeek', url: 'https://chat.deepseek.com', icon: 'auto_awesome' },
-        { id: '4-3', name: 'Cursor', url: 'https://cursor.sh', icon: 'edit' },
+        { id: '4-3', name: 'DeepSeek', url: 'https://chat.deepseek.com', icon: 'auto_awesome' },
+        { id: '4-4', name: 'Cursor', url: 'https://cursor.sh', icon: 'edit' },
       ]
     }
-  ]
+  ],
+  widgets: {
+    focusWarden: {
+      blockedSites: []
+    }
+  }
 };
 
 // Interface for the context value
@@ -93,6 +107,10 @@ interface DataContextType {
   updateLinkGroups: (groups: LinkGroup[]) => void;
   updateLinkSettings: (settings: Partial<AppData['linkSettings']>) => void;
   updateThemeSettings: (settings: Partial<AppData['themeSettings']>) => void;
+  updateWidgetData: <T extends keyof WidgetsData>(
+    widgetName: T,
+    data: Partial<NonNullable<WidgetsData[T]>>
+  ) => void;
   toggleTheme: () => void;
 }
 
@@ -102,6 +120,7 @@ const DataContext = createContext<DataContextType>({
   updateLinkGroups: () => {},
   updateLinkSettings: () => {},
   updateThemeSettings: () => {},
+  updateWidgetData: () => {},
   toggleTheme: () => {},
 });
 
@@ -118,7 +137,19 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       
       // If data exists in localStorage, use it
       if (storedData) {
-        return JSON.parse(storedData);
+        const parsedData = JSON.parse(storedData);
+        
+        // Ensure widgets object exists
+        if (!parsedData.widgets) {
+          parsedData.widgets = defaultData.widgets;
+        }
+        
+        // Ensure focusWarden exists in widgets
+        if (!parsedData.widgets.focusWarden) {
+          parsedData.widgets.focusWarden = { blockedSites: [] };
+        }
+        
+        return parsedData;
       }
       
       // Otherwise check if we have legacy data to migrate
@@ -259,6 +290,35 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     }));
   };
 
+  // Update widget data
+  const updateWidgetData = <T extends keyof WidgetsData>(
+    widgetName: T,
+    widgetData: Partial<NonNullable<WidgetsData[T]>>
+  ) => {
+    setData(prevData => {
+      // Create a copy of the previous data
+      const newData = { ...prevData };
+      
+      // Ensure widgets object exists
+      if (!newData.widgets) {
+        newData.widgets = {};
+      }
+      
+      // Ensure the widget exists
+      if (!newData.widgets[widgetName]) {
+        newData.widgets[widgetName] = {} as any;
+      }
+      
+      // Update the widget data
+      newData.widgets[widgetName] = {
+        ...newData.widgets[widgetName],
+        ...widgetData
+      };
+      
+      return newData;
+    });
+  };
+
   // Toggle theme helper function
   const toggleTheme = () => {
     updateThemeSettings({
@@ -282,6 +342,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     updateLinkGroups,
     updateLinkSettings,
     updateThemeSettings,
+    updateWidgetData,
     toggleTheme,
   };
 
