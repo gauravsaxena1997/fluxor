@@ -34,7 +34,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import LaunchIcon from '@mui/icons-material/Launch';
 
 // Components
-import ToggleSelector from '../ToggleSelector';
+import ToggleSelector from '../ToggleSelector/ToggleSelector';
 
 // Styles
 import './LinksSection.css';

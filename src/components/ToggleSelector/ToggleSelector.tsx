@@ -1,7 +1,8 @@
+import { ReactNode } from 'react';
 import './ToggleSelector.css';
 
 interface ToggleSelectorProps<T extends string> {
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; icon?: ReactNode }[];
   value: T;
   onChange: (value: T) => void;
   name?: string;
@@ -24,6 +25,7 @@ function ToggleSelector<T extends string>({
           aria-pressed={value === option.value}
           name={name}
         >
+          {option.icon && <span className="toggle-selector-icon">{option.icon}</span>}
           {option.label}
         </button>
       ))}

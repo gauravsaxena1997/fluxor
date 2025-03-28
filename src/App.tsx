@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
 import './App.css';
-import './light-mode-fixes.css';
 import { useData } from './context/DataContext';
 
 // Import our modular components
@@ -37,7 +36,7 @@ function App() {
 
   return (
     <div 
-      className={`new-tab-container ${isDarkMode ? 'dark-theme' : 'light-theme'} ${backgroundImage ? 'has-bg-image' : ''}`}
+      className={`fluxor-container ${isDarkMode ? 'dark-theme' : 'light-theme'} ${backgroundImage ? 'has-bg-image' : ''}`}
       style={containerStyle}
     >
       {/* App Controls - Settings and Edit Icons */}

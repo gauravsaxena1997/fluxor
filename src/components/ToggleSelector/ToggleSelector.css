@@ -1,0 +1,55 @@
+.toggle-selector-group {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+:global(.dark-theme) .toggle-selector-group {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.toggle-selector-option {
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+  text-align: center;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+:global(.dark-theme) .toggle-selector-option {
+  color: var(--text-color-dark);
+}
+
+.toggle-selector-option:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+:global(.dark-theme) .toggle-selector-option:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.toggle-selector-option.active {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.toggle-selector-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-selector-icon svg {
+  width: 20px;
+  height: 20px;
+}
