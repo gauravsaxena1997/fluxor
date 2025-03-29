@@ -230,7 +230,7 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
             helperText={error}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start" style={{ marginRight: 8 }}>
+                <InputAdornment position="start" style={{ marginRight: 30 }}>
                   <LinkIcon className="input-icon" />
                 </InputAdornment>
               ),
@@ -275,7 +275,7 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
                     <TimerIcon className="input-icon" style={{ fontSize: '0.9rem' }} />
                   </InputAdornment>
                 ),
-                style: { paddingRight: 8 },
+                style: { paddingRight: 12 },
               }}
             />
           )}
