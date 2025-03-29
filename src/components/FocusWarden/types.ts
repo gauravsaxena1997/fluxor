@@ -6,6 +6,12 @@ export interface BlockedSite {
   type: BlockType;
   timeLimit?: number; // in minutes
   createdAt: number;
+  // Fields for time-limit tracking
+  usageTime?: number; // accumulated usage time in minutes
+  lastResetDate?: string; // date string in YYYY-MM-DD format for daily reset
+  lastVisitTime?: number; // timestamp of the last visit (for tracking active sessions)
+  isActive?: boolean; // whether user is currently on the site
+  limitReached?: boolean; // whether time limit has been reached for today
 }
 
 export interface FocusWardenStats {

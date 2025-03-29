@@ -1,28 +1,19 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { BlockedPage } from './components/FocusWarden/blocked-page';
+import ReactDOM from 'react-dom/client';
+import BlockedPage from './components/FocusWarden/blocked-page';
+import './index.css';
+import './App.css';
 import './components/FocusWarden/BlockedSite.css';
 
-// Get URL parameters
-const params = new URLSearchParams(window.location.search);
-const url = params.get('url') || '';
-const type = params.get('type') || 'permanent';
-const timeLimit = params.get('timeLimit') ? parseInt(params.get('timeLimit') || '0') : undefined;
-const createdAt = params.get('createdAt') ? parseInt(params.get('createdAt') || '0') : Date.now();
-
-// Create a blocked site object from URL parameters
-const site = {
-  id: 'blocked',
-  url: url,
-  type: type as 'permanent' | 'timeLimit',
-  timeLimit: timeLimit,
-  createdAt: createdAt
-};
+// Import Material Icons
+const iconFont = document.createElement('link');
+iconFont.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+iconFont.rel = 'stylesheet';
+document.head.appendChild(iconFont);
 
 // Render the blocked page component
-const root = createRoot(document.getElementById('root') as HTMLElement);
-root.render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BlockedPage site={site} />
+    <BlockedPage />
   </React.StrictMode>
 ); 

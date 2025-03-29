@@ -3,7 +3,7 @@ import { TextField, Button, Box, Typography, InputAdornment, IconButton } from '
 import { Link as LinkIcon, Shield as ShieldIcon, Timer as TimerIcon, Gavel as GavelIcon, Add as AddIcon } from '@mui/icons-material';
 import { FocusWardenProps, BlockedSite, BlockType } from './types';
 import FocusWardenPopup from './FocusWardenPopup';
-import { normalizeUrl, isTimeLimitExpired } from './utils';
+import { normalizeUrl } from './utils';
 import { useData } from '../../context/DataContext';
 import ToggleSelector from '../ToggleSelector/ToggleSelector';
 import './FocusWarden.css';
@@ -16,6 +16,12 @@ try {
   }
 } catch (error) {
   console.error('Error checking webRequest API:', error);
+}
+
+// Helper function to get today's date string in YYYY-MM-DD format
+function getTodayString(): string {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
@@ -80,23 +86,8 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
         // Get blocked sites from DataContext with null checks
         const storedSites = data?.widgets?.focusWarden?.blockedSites || [];
         
-        // Filter out expired time-limited sites
-        const activeSites = storedSites.filter((site: BlockedSite) => 
-          site.type === 'permanent' || !isTimeLimitExpired(site)
-        );
-        
-        setBlockedSites(activeSites);
-        
-        // Update DataContext if needed
-        if (activeSites.length !== storedSites.length) {
-          // Make sure widgets exists
-          updateWidgetData('focusWarden', { blockedSites: activeSites });
-          
-          // If in extension context, also update chrome.storage
-          if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-            chrome.storage.local.set({ blockedSites: activeSites });
-          }
-        }
+        // Important: No longer filter out expired time-limited sites
+        setBlockedSites(storedSites);
       } catch (error) {
         console.error('Error loading blocked sites:', error);
       }
@@ -125,6 +116,16 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
       return;
     }
 
+    // Validate time limit for time-limited blocks
+    let parsedTimeLimit: number | undefined;
+    if (blockType === 'timeLimit') {
+      parsedTimeLimit = parseInt(timeLimit);
+      if (isNaN(parsedTimeLimit) || parsedTimeLimit <= 0) {
+        setError('Please enter a valid time limit greater than 0 minutes');
+        return;
+      }
+    }
+
     const normalizedUrl = normalizeUrl(url);
     if (blockedSites.some(site => site.url === normalizedUrl)) {
       setError('This site is already blocked');
@@ -135,8 +136,13 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
       id: Date.now().toString(),
       url: normalizedUrl,
       type: blockType,
-      timeLimit: blockType === 'timeLimit' ? parseInt(timeLimit) : undefined,
+      timeLimit: parsedTimeLimit,
       createdAt: Date.now(),
+      // Add necessary properties for time limit tracking
+      usageTime: 0,
+      lastResetDate: getTodayString(),
+      isActive: false,
+      limitReached: false
     };
 
     const updatedSites = [...blockedSites, newSite];
