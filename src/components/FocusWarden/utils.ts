@@ -21,10 +21,15 @@ export const getRandomDungeonMessage = (): string => {
 export const normalizeUrl = (url: string): string => {
   console.log(`Normalizing URL: ${url}`);
   
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    console.error('Invalid URL provided for normalization');
+    return '';
+  }
+  
   // Add protocol if missing
-  let normalized = url;
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    normalized = 'https://' + url;
+  let normalized = url.trim();
+  if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+    normalized = 'https://' + normalized;
   }
   
   try {
@@ -105,12 +110,17 @@ export const isTimeLimitExpired = (site: BlockedSite): boolean => {
  * @returns The favicon URL for the website
  */
 export const getFaviconUrl = (url: string): string => {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    return 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
+  }
+  
   try {
-    const normalizedUrl = normalizeUrl(url);
-    const hostname = new URL(normalizedUrl).hostname;
-    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+    const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+    const urlObj = new URL(normalizedUrl);
+    return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=64`;
   } catch (e) {
     // Return a default icon if URL parsing fails
+    console.error('Error getting favicon:', e);
     return 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
   }
 }; 

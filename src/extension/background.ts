@@ -1,3 +1,5 @@
+/// <reference types="chrome"/>
+
 import { BlockedSite } from '../components/FocusWarden/types';
 
 /**
@@ -12,6 +14,25 @@ import { BlockedSite } from '../components/FocusWarden/types';
 
 // Initialize the extension when loaded
 initializeExtension();
+
+/**
+ * Safely parses a URL string and returns URL object or null if invalid
+ * @param urlString URL string to parse
+ * @returns URL object or null if parsing fails
+ */
+function safeParseUrl(urlString: string): URL | null {
+  if (!urlString || typeof urlString !== 'string') {
+    console.error('Invalid URL string:', urlString);
+    return null;
+  }
+  
+  try {
+    return new URL(urlString);
+  } catch (error) {
+    console.error('Error parsing URL:', urlString, error);
+    return null;
+  }
+}
 
 /**
  * Initialize the extension
@@ -140,7 +161,7 @@ async function updateDynamicRules(blockedSites: BlockedSite[]) {
     
     // Remove all existing dynamic rules
     const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
-    const removeRuleIds = existingRules.map(rule => rule.id);
+    const removeRuleIds = existingRules.map((rule: any) => rule.id);
     
     if (removeRuleIds.length > 0) {
       await chrome.declarativeNetRequest.updateDynamicRules({
@@ -149,7 +170,7 @@ async function updateDynamicRules(blockedSites: BlockedSite[]) {
     }
 
     // Prepare new rules
-    const newRules: chrome.declarativeNetRequest.Rule[] = [];
+    const newRules: any[] = [];
     
     // Start rule IDs from a high number to avoid conflicts
     let ruleIdCounter = 1000;
@@ -222,7 +243,9 @@ async function redirectActiveTabsForSite(site: BlockedSite) {
     for (const tab of tabs) {
       if (tab.url && tab.url.startsWith('http')) {
         try {
-          const tabUrl = new URL(tab.url);
+          const tabUrl = safeParseUrl(tab.url);
+          if (!tabUrl) continue; // Skip this tab if URL parsing failed
+          
           const tabDomain = tabUrl.hostname.replace(/^www\./, '');
           
           // Check if this tab is for the site that reached its limit
@@ -292,7 +315,7 @@ async function loadAndApplyRules() {
 /**
  * Listen for storage changes to update rules and handle already open tabs
  */
-chrome.storage.onChanged.addListener(async (changes, namespace) => {
+chrome.storage.onChanged.addListener(async (changes: any, namespace: string) => {
   if (namespace === 'local' && changes.blockedSites) {
     const oldSites = changes.blockedSites.oldValue || [];
     const newSites = changes.blockedSites.newValue || [];
@@ -337,7 +360,9 @@ async function handleAlreadyOpenTabs(newSites: BlockedSite[]) {
       for (const tab of tabs) {
         if (tab.url && tab.url.startsWith('http')) {
           try {
-            const tabUrl = new URL(tab.url);
+            const tabUrl = safeParseUrl(tab.url);
+            if (!tabUrl) continue; // Skip this tab if URL parsing failed
+            
             const tabDomain = tabUrl.hostname.replace(/^www\./, '');
             
             // Check if this tab is for this site
@@ -448,12 +473,14 @@ async function updateUsageTime() {
  * Track site visits using webNavigation API
  * Detects when user navigates to time-limited sites
  */
-chrome.webNavigation.onCompleted.addListener(async (details) => {
+chrome.webNavigation.onCompleted.addListener(async (details: any) => {
   // Only process main frame navigations (top-level page loads)
   if (details.frameId !== 0) return;
   
   try {
-    const url = new URL(details.url);
+    const url = safeParseUrl(details.url);
+    if (!url) return; // Exit if URL parsing failed
+    
     const domain = url.hostname;
     
     // Get blocked sites
@@ -515,12 +542,17 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
 /**
  * Track when user leaves a site or updates a tab
  */
-chrome.tabs.onUpdated.addListener(async (_, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener(async (
+  _: number, 
+  changeInfo: any, 
+  tab: any
+) => {
   // Only process when a tab completes loading and has a URL
   if (changeInfo.status !== 'complete' || !tab.url) return;
   
   try {
-    const url = new URL(tab.url);
+    const url = safeParseUrl(tab.url);
+    if (!url) return; // Exit if URL parsing failed
     
     // Ignore extension pages and non-http protocols
     if (!url.protocol.startsWith('http')) return;
@@ -534,7 +566,7 @@ chrome.tabs.onUpdated.addListener(async (_, changeInfo, tab) => {
 /**
  * Track when user closes a tab
  */
-chrome.tabs.onRemoved.addListener(async (tabId) => {
+chrome.tabs.onRemoved.addListener(async (tabId: number) => {
   console.log(`Tab ${tabId} was closed`);
   
   // Small delay to ensure all tab data is updated
@@ -560,11 +592,14 @@ async function checkAndUpdateActiveSites() {
     for (const t of allTabs) {
       if (t.url && t.url.startsWith('http')) {
         try {
-          const tabUrl = new URL(t.url);
+          const tabUrl = safeParseUrl(t.url);
+          if (!tabUrl) continue; // Skip this tab if URL parsing failed
+          
           const domain = tabUrl.hostname.replace(/^www\./, '');
           openDomains.add(domain);
         } catch (e) {
           // Ignore parse errors
+          console.error('Error parsing tab URL:', e);
         }
       }
     }
@@ -630,7 +665,7 @@ const UPDATE_INTERVAL = 5000; // Update every 5 seconds
 setInterval(updateUsageTime, UPDATE_INTERVAL);
 
 // Also check time limits when a navigation occurs
-chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
+chrome.webNavigation.onBeforeNavigate.addListener(async (details: any) => {
   // Only check main frame navigations
   if (details.frameId !== 0) return;
   

@@ -118,10 +118,18 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
    * @returns boolean indicating if URL is valid
    */
   const validateUrl = (input: string): boolean => {
+    // Check for empty input
+    if (!input || input.trim() === '') {
+      return false;
+    }
+    
     try {
-      new URL(input.startsWith('http') ? input : `https://${input}`);
+      // Add https:// protocol if missing
+      const urlString = input.startsWith('http') ? input : `https://${input}`;
+      new URL(urlString);
       return true;
-    } catch {
+    } catch (error) {
+      console.error('URL validation error:', error);
       return false;
     }
   };
@@ -186,7 +194,7 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
                 await chrome.tabs.update(tab.id, { url: redirectUrl });
               }
             } catch (e) {
-              console.error('Error processing tab:', e);
+              console.error('Error processing tab URL:', e);
             }
           }
         }

@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "postbuild": "node -e \"require('fs').copyFileSync('./dist/src/blocked.html', './dist/blocked.html')\"",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "download-images": "node scripts/generate-block-images.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
