@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TextField, Button, Box, Typography, InputAdornment, IconButton } from '@mui/material';
-import { Link as LinkIcon, Shield as ShieldIcon, Timer as TimerIcon, Gavel as GavelIcon, Add as AddIcon } from '@mui/icons-material';
+import { Link as LinkIcon, Shield as ShieldIcon, Timer as TimerIcon, Gavel as GavelIcon, ManageAccounts as ManageIcon } from '@mui/icons-material';
 import { FocusWardenProps, BlockedSite, BlockType } from './types';
 import FocusWardenPopup from './FocusWardenPopup';
 import { normalizeUrl } from './utils';
@@ -34,6 +34,7 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
   const [blockedSites, setBlockedSites] = useState<BlockedSite[]>(
     data?.widgets?.focusWarden?.blockedSites || []
   );
+  const timeLimitInputRef = useRef<HTMLInputElement>(null);
 
   // Define toggle options
   const blockTypeOptions = [
@@ -43,7 +44,7 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     },
     { 
       value: 'timeLimit' as BlockType, 
-      label: 'Time Limit'
+      label: 'Restrict Time'
     }
   ];
 
@@ -96,12 +97,84 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     loadBlockedSites();
   }, [data?.widgets?.focusWarden?.blockedSites, updateWidgetData]);
 
+  // Focus the time limit input when the block type changes to timeLimit
+  useEffect(() => {
+    if (blockType === 'timeLimit' && timeLimitInputRef.current) {
+      setTimeout(() => {
+        timeLimitInputRef.current?.focus();
+      }, 0);
+    }
+  }, [blockType]);
+
   const validateUrl = (input: string): boolean => {
     try {
       new URL(input.startsWith('http') ? input : `https://${input}`);
       return true;
     } catch {
       return false;
+    }
+  };
+
+  // Handle opening the popup and refreshing data
+  const handleOpenPopup = async () => {
+    // Refresh data from storage before opening popup
+    try {
+      if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+        const chromeData = await chrome.storage.local.get('blockedSites');
+        const freshBlockedSites = chromeData.blockedSites || [];
+        setBlockedSites(freshBlockedSites);
+      }
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
+    
+    setIsPopupOpen(true);
+  };
+
+  // Function to redirect already open tabs when adding a permanent block
+  const redirectOpenTabs = async (site: BlockedSite) => {
+    if (site.type !== 'permanent') return;
+    
+    try {
+      if (typeof chrome !== 'undefined' && chrome.tabs) {
+        // Get all open tabs
+        const tabs = await chrome.tabs.query({});
+        
+        // Get domain from site URL
+        let siteDomain = site.url.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '');
+        
+        // Check each tab
+        for (const tab of tabs) {
+          if (tab.url && tab.url.startsWith('http')) {
+            try {
+              const tabUrl = new URL(tab.url);
+              const tabDomain = tabUrl.hostname.replace(/^www\./, '');
+              
+              // Check if this tab matches the site
+              const isMatchingSite = 
+                tabDomain === siteDomain || 
+                tabDomain.endsWith(`.${siteDomain}`) || 
+                siteDomain.endsWith(`.${tabDomain}`);
+              
+              if (isMatchingSite && tab.id) {
+                // Create params for redirect
+                const params = new URLSearchParams();
+                params.append('url', site.url);
+                params.append('type', site.type);
+                
+                const redirectUrl = chrome.runtime.getURL(`/blocked.html?${params.toString()}`);
+                
+                // Redirect the tab
+                await chrome.tabs.update(tab.id, { url: redirectUrl });
+              }
+            } catch (e) {
+              console.error('Error processing tab:', e);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error redirecting open tabs:', error);
     }
   };
 
@@ -155,6 +228,9 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     try {
       if (typeof chrome !== 'undefined' && chrome.storage?.local) {
         chrome.storage.local.set({ blockedSites: updatedSites });
+        
+        // Immediately redirect any open tabs if this is a permanent block
+        redirectOpenTabs(newSite);
       }
     } catch (error) {
       console.error('Error saving blocked sites to extension storage:', error);
@@ -191,13 +267,22 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
 
   return (
     <>
-      <div className={`focus-warden ${className || ''}`}>
-        {/* Widget Title */}
+      <div className={`focus-warden ${className || ''}`} style={{ maxHeight: '100%' }}>
+        {/* Widget Title with Manage Icon */}
         <Box className="widget-title">
           <ShieldIcon className="widget-icon" />
           <Typography variant="h6" className="widget-title-text">
             Focus Warden
           </Typography>
+          <IconButton 
+            className="manage-icon-btn"
+            onClick={handleOpenPopup}
+            aria-label="Manage blocked sites"
+            title="Manage blocked sites"
+            size="small"
+          >
+            <ManageIcon />
+          </IconButton>
         </Box>
 
         {/* Stats Row */}
@@ -211,11 +296,11 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
           <div className="stat-item">
             <TimerIcon className="stat-icon" />
             <span className="stat-count">{stats.timeLimitedCount}</span>
-            <span className="stat-label">Time Limit</span>
+            <span className="stat-label">Time Restricted</span>
           </div>
         </Box>
 
-        {/* URL Input Row with Add Button */}
+        {/* URL Input Row */}
         <Box className="url-input-row">
           <TextField
             fullWidth
@@ -232,18 +317,6 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
               startAdornment: (
                 <InputAdornment position="start" style={{ marginRight: 30 }}>
                   <LinkIcon className="input-icon" />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton 
-                    edge="end" 
-                    onClick={handleAddSite}
-                    disabled={!url || !!error}
-                    size="small"
-                  >
-                    <AddIcon className="add-icon" />
-                  </IconButton>
                 </InputAdornment>
               ),
               style: { paddingLeft: 8 },
@@ -269,27 +342,30 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
               value={timeLimit}
               onChange={(e) => setTimeLimit(e.target.value)}
               className="time-limit-input"
+              inputRef={timeLimitInputRef}
+              inputProps={{ min: "1" }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end" style={{ marginLeft: 8 }}>
                     <TimerIcon className="input-icon" style={{ fontSize: '0.9rem' }} />
                   </InputAdornment>
                 ),
-                style: { paddingRight: 12 },
+                style: { marginLeft: 8 },
               }}
             />
           )}
         </Box>
 
-        {/* Manage Sites Button */}
+        {/* Block Button */}
         <Box className="actions-row">
           <Button
-            variant="outlined"
-            onClick={() => setIsPopupOpen(true)}
+            variant="contained"
+            onClick={handleAddSite}
             fullWidth
-            className="manage-sites-btn"
+            className="block-btn"
+            disabled={!url || !!error}
           >
-            Manage blocked sites
+            Block
           </Button>
         </Box>
       </div>

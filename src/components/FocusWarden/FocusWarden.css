@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  overflow: hidden;
+  overflow-y: auto;
   box-sizing: border-box;
 }
 
@@ -30,6 +30,17 @@
   font-weight: 600 !important;
   color: var(--text-color);
   margin: 0 !important;
+  flex-grow: 1;
+}
+
+.manage-icon-btn {
+  color: var(--accent-color) !important;
+  padding: 4px !important;
+  margin-left: auto !important;
+}
+
+.manage-icon-btn:hover {
+  background-color: rgba(77, 182, 172, 0.1) !important;
 }
 
 /* Stats Row */
@@ -140,29 +151,45 @@
 }
 
 .time-limit-input {
-  width: 120px;
+  width: 112px;
   min-width: 0;
   flex-shrink: 0;
   margin-left: auto;
 }
 
+/* Hide spin buttons for number inputs */
+.focus-warden input[type="number"]::-webkit-inner-spin-button,
+.focus-warden input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.focus-warden input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
 /* Actions Row */
 .actions-row {
   display: flex;
-  margin-top: auto;
   gap: 6px;
 }
 
-.manage-sites-btn {
-  color: var(--accent-color) !important;
-  border-color: var(--accent-color) !important;
+.block-btn {
+  background-color: var(--accent-color) !important;
+  color: white !important;
   font-size: 0.9rem !important;
-  padding: 6px 12px !important;
+  padding: 8px 16px !important;
   width: 100%;
+  font-weight: 500 !important;
 }
 
-.manage-sites-btn:hover {
-  background: rgba(77, 182, 172, 0.1) !important;
+.block-btn:hover {
+  background-color: var(--accent-hover) !important;
+}
+
+.block-btn:disabled {
+  background-color: rgba(77, 182, 172, 0.3) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 /* MUI Overrides */
@@ -250,7 +277,19 @@
   }
 }
 
+@media (max-width: 992px) {
+  .focus-warden {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
+  .focus-warden {
+    width: 100%;
+    max-width: 100%;
+  }
+  
   .focus-warden :global(.toggle-selector-option) {
     padding: 3px 6px;
     font-size: 0.7rem;
@@ -260,13 +299,13 @@
     font-size: 0.8rem;
   }
   
-  .manage-sites-btn {
+  .manage-icon-btn {
     font-size: 0.8rem !important;
     padding: 4px 8px !important;
   }
   
   .time-limit-input {
-    width: 90px;
+    width: 70px;
     margin-left: 0;
   }
   

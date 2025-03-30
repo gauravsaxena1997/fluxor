@@ -5,11 +5,11 @@ import {
   Gavel as GavelIcon,
   Timer as TimerIcon,
   Delete as DeleteIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { BlockedSite } from './types';
 import ToggleSelector from '../ToggleSelector/ToggleSelector';
 import './FocusWardenPopup.css';
-import { formatDistanceToNow } from 'date-fns';
 import { getFaviconUrl } from './utils';
 
 interface FocusWardenPopupProps {
@@ -27,11 +27,18 @@ const FocusWardenPopup = ({
 }: FocusWardenPopupProps) => {
   const [deleteConfirmSite, setDeleteConfirmSite] = useState<BlockedSite | null>(null);
   const [activeTab, setActiveTab] = useState<'permanent' | 'timeLimit'>('permanent');
+  const [localBlockedSites, setLocalBlockedSites] = useState<BlockedSite[]>(blockedSites);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
+  // Update local state when props change
+  useEffect(() => {
+    setLocalBlockedSites(blockedSites);
+  }, [blockedSites]);
+
   // Get stats
-  const permanentSites = blockedSites.filter(site => site.type === 'permanent');
-  const timeLimitSites = blockedSites.filter(site => site.type === 'timeLimit');
+  const permanentSites = localBlockedSites.filter(site => site.type === 'permanent');
+  const timeLimitSites = localBlockedSites.filter(site => site.type === 'timeLimit');
 
   // Tab options
   const tabOptions = [
@@ -42,22 +49,69 @@ const FocusWardenPopup = ({
     },
     { 
       value: 'timeLimit' as const, 
-      label: `Time Limit (${timeLimitSites.length})`, 
+      label: `Time Restricted (${timeLimitSites.length})`, 
       icon: <TimerIcon className="tab-icon" /> 
     }
   ];
 
-  // Calculate remaining time for time-limited sites
-  const getTimeRemaining = (site: BlockedSite): string => {
-    if (!site.timeLimit || !site.createdAt) return '0 min';
+  // Refresh function to sync the latest time data
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
     
-    const createdTime = site.createdAt;
-    const expiryTime = createdTime + (site.timeLimit * 60 * 1000);
-    const now = Date.now();
+    setIsRefreshing(true);
     
-    if (now > expiryTime) return 'Expired';
+    try {
+      // Only proceed if we're in an extension context
+      if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+        const chromeData = await chrome.storage.local.get('blockedSites');
+        const freshBlockedSites = chromeData.blockedSites || [];
+        setLocalBlockedSites(freshBlockedSites);
+      }
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      // Add a small delay to show the refresh animation
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 500);
+    }
+  };
+
+  // Format time usage display
+  const getTimeUsageDisplay = (site: BlockedSite): string => {
+    if (!site.timeLimit) return 'Daily limit: 0 min';
+    return `Daily limit: ${site.timeLimit} min`;
+  };
+
+  // Calculate remaining time and progress percentage for time-limited sites
+  const getTimeRemaining = (site: BlockedSite): { text: string, progressPercent: number } => {
+    if (!site.timeLimit) return { text: '0 min', progressPercent: 0 };
     
-    return formatDistanceToNow(expiryTime, { addSuffix: true });
+    // If limit is reached for today, show message
+    if (site.limitReached) {
+      return { text: 'Limit reached for today', progressPercent: 100 };
+    }
+
+    // Get the usage time (default to 0 if not set)
+    const usedMinutes = site.usageTime || 0;
+    
+    // Calculate remaining minutes
+    const remainingMinutes = Math.max(0, site.timeLimit - usedMinutes);
+    
+    // Calculate progress percentage
+    const progressPercent = Math.min(100, (usedMinutes / site.timeLimit) * 100);
+    
+    // Format the display nicely
+    if (remainingMinutes <= 0) {
+      return { text: 'Limit reached for today', progressPercent: 100 };
+    } else if (remainingMinutes < 1) {
+      return { text: 'Less than a minute left', progressPercent: progressPercent };
+    } else {
+      return { 
+        text: `${remainingMinutes.toFixed(2)} minutes left`, 
+        progressPercent: progressPercent 
+      };
+    }
   };
 
   // Handle escape key
@@ -92,13 +146,24 @@ const FocusWardenPopup = ({
       <div className="focus-warden-popup-content">
         <div className="focus-warden-popup-header">
           <h2 id="focus-warden-popup-title">Manage Blocked Sites</h2>
-          <button 
-            className="focus-warden-popup-close" 
-            onClick={onClose}
-            aria-label="Close blocked sites list"
-          >
-            <CloseIcon />
-          </button>
+          <div className="header-actions">
+            <button 
+              className={`refresh-button ${isRefreshing ? 'refreshing' : ''}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label="Refresh time data"
+              title="Refresh time data"
+            >
+              <RefreshIcon />
+            </button>
+            <button 
+              className="focus-warden-popup-close" 
+              onClick={onClose}
+              aria-label="Close blocked sites list"
+            >
+              <CloseIcon />
+            </button>
+          </div>
         </div>
         
         {/* Tabs */}
@@ -168,7 +233,16 @@ const FocusWardenPopup = ({
                       <div className="site-info">
                         <div className="site-url">{site.url}</div>
                         <div className="site-type time-limit">
-                          <TimerIcon /> {site.timeLimit} minutes ({getTimeRemaining(site)})
+                          <TimerIcon /> {getTimeUsageDisplay(site)}
+                        </div>
+                        <div className="time-progress-container">
+                          <div 
+                            className="time-progress-bar" 
+                            style={{ width: `${getTimeRemaining(site).progressPercent}%` }}
+                          ></div>
+                          <div className="time-remaining">
+                            {getTimeRemaining(site).text}
+                          </div>
                         </div>
                       </div>
                       <button 
@@ -199,13 +273,13 @@ const FocusWardenPopup = ({
         </p>
         <div className="confirm-actions">
           <button 
-            className="cancel-btn"
+            className="confirm-cancel"
             onClick={() => setDeleteConfirmSite(null)}
           >
             Cancel
           </button>
           <button 
-            className="delete-btn"
+            className="confirm-delete"
             onClick={() => {
               onDeleteSite(deleteConfirmSite.id);
               setDeleteConfirmSite(null);
@@ -218,9 +292,10 @@ const FocusWardenPopup = ({
     </div>
   );
 
-  // Create portal to render at document body level
+  // Use createPortal to render the popup at the document level
   return createPortal(
     <>
+      <div className="focus-warden-popup-backdrop" onClick={onClose}></div>
       {modalContent}
       {confirmDialog}
     </>,

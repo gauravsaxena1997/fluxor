@@ -253,13 +253,90 @@ async function loadAndApplyRules() {
   }
 }
 
-// Listen for storage changes to update rules
-chrome.storage.onChanged.addListener((changes, namespace) => {
+// Listen for storage changes to update rules and handle already open tabs
+chrome.storage.onChanged.addListener(async (changes, namespace) => {
   if (namespace === 'local' && changes.blockedSites) {
-    const blockedSites = changes.blockedSites.newValue || [];
-    updateDynamicRules(blockedSites);
+    const oldSites = changes.blockedSites.oldValue || [];
+    const newSites = changes.blockedSites.newValue || [];
+    
+    // Check for newly added time-limited sites
+    const newlyAddedTimeLimitSites = newSites.filter((newSite: BlockedSite) => {
+      return newSite.type === 'timeLimit' && 
+             !oldSites.some((oldSite: BlockedSite) => oldSite.id === newSite.id);
+    });
+    
+    // If there are newly added time-limited sites, check for already open tabs
+    if (newlyAddedTimeLimitSites.length > 0) {
+      console.log('New time-limited sites added, checking for open tabs:', newlyAddedTimeLimitSites);
+      await handleAlreadyOpenTabs(newlyAddedTimeLimitSites);
+    }
+    
+    // Update blocking rules
+    updateDynamicRules(newSites);
   }
 });
+
+// Function to handle already open tabs when a new site is added
+async function handleAlreadyOpenTabs(newSites: BlockedSite[]) {
+  try {
+    // Get all open tabs
+    const tabs = await chrome.tabs.query({});
+    let needsUpdate = false;
+    
+    // Get the current list of blocked sites
+    const chromeData = await chrome.storage.local.get('blockedSites');
+    let blockedSites = chromeData.blockedSites || [];
+    
+    // Check each new site against open tabs
+    for (const site of newSites) {
+      // Get domain from site URL
+      let siteDomain = site.url.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '');
+      
+      // Check each tab to see if it matches the site
+      for (const tab of tabs) {
+        if (tab.url && tab.url.startsWith('http')) {
+          try {
+            const tabUrl = new URL(tab.url);
+            const tabDomain = tabUrl.hostname.replace(/^www\./, '');
+            
+            // Check if this tab is for this site
+            const isMatchingSite = 
+              tabDomain === siteDomain || 
+              tabDomain.endsWith(`.${siteDomain}`) || 
+              siteDomain.endsWith(`.${tabDomain}`);
+            
+            if (isMatchingSite) {
+              console.log(`Found already open tab for newly added site ${site.url}:`, tab);
+              
+              // Update the site to mark it as active
+              const siteIndex = blockedSites.findIndex((s: BlockedSite) => s.id === site.id);
+              if (siteIndex !== -1) {
+                blockedSites[siteIndex] = {
+                  ...blockedSites[siteIndex],
+                  isActive: true,
+                  lastVisitTime: Date.now()
+                };
+                needsUpdate = true;
+                
+                console.log(`Marked site ${site.url} as active because tab was already open`);
+              }
+            }
+          } catch (e) {
+            // Skip tabs with invalid URLs
+            console.error('Error processing tab URL:', e);
+          }
+        }
+      }
+    }
+    
+    // Save updates if needed
+    if (needsUpdate) {
+      await chrome.storage.local.set({ blockedSites });
+    }
+  } catch (error) {
+    console.error('Error handling already open tabs:', error);
+  }
+}
 
 // Function to update usage time for active sites
 async function updateUsageTime() {
@@ -403,11 +480,30 @@ chrome.tabs.onUpdated.addListener(async (_, changeInfo, tab) => {
     // Ignore extension pages and non-http protocols
     if (!url.protocol.startsWith('http')) return;
     
+    await checkAndUpdateActiveSites();
+  } catch (error) {
+    console.error('Error tracking tab update:', error);
+  }
+});
+
+// Track when user closes a tab
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  console.log(`Tab ${tabId} was closed`);
+  
+  // Small delay to ensure all tab data is updated
+  setTimeout(async () => {
+    await checkAndUpdateActiveSites();
+  }, 100);
+});
+
+// Function to check which sites are actually open and update their active status
+async function checkAndUpdateActiveSites() {
+  try {
     // Get blocked sites
     const chromeData = await chrome.storage.local.get('blockedSites');
     let blockedSites = chromeData.blockedSites || [];
     
-    // Get tabs to check which sites are currently open
+    // Get all currently open tabs
     const allTabs = await chrome.tabs.query({});
     const openDomains = new Set<string>();
     
@@ -423,6 +519,8 @@ chrome.tabs.onUpdated.addListener(async (_, changeInfo, tab) => {
         }
       }
     }
+    
+    console.log('Currently open domains:', Array.from(openDomains));
     
     // Update active status for all sites
     let needsUpdate = false;
@@ -473,11 +571,10 @@ chrome.tabs.onUpdated.addListener(async (_, changeInfo, tab) => {
       // Update blocking rules to apply new states
       await updateDynamicRules(blockedSites);
     }
-    
   } catch (error) {
-    console.error('Error tracking tab update:', error);
+    console.error('Error checking active sites:', error);
   }
-});
+}
 
 // Set up a timer to periodically update usage time for active sites
 const UPDATE_INTERVAL = 5000; // Update every 5 seconds
