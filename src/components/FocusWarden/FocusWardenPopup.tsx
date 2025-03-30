@@ -12,35 +12,53 @@ import ToggleSelector from '../ToggleSelector/ToggleSelector';
 import './FocusWardenPopup.css';
 import { getFaviconUrl } from './utils';
 
+/**
+ * Props for the FocusWardenPopup component
+ */
 interface FocusWardenPopupProps {
+  /** Whether the popup is open */
   isOpen: boolean;
+  /** Function to close the popup */
   onClose: () => void;
+  /** List of blocked sites to display */
   blockedSites: BlockedSite[];
+  /** Callback for when a site is deleted */
   onDeleteSite: (siteId: string) => void;
 }
 
+/**
+ * FocusWardenPopup Component
+ * 
+ * A popup/sidebar that displays all blocked sites, separated by type (permanent/time limited).
+ * Allows refreshing time limit data and deleting sites.
+ */
 const FocusWardenPopup = ({
   isOpen,
   onClose,
   blockedSites,
   onDeleteSite
 }: FocusWardenPopupProps) => {
+  // State
   const [deleteConfirmSite, setDeleteConfirmSite] = useState<BlockedSite | null>(null);
   const [activeTab, setActiveTab] = useState<'permanent' | 'timeLimit'>('permanent');
   const [localBlockedSites, setLocalBlockedSites] = useState<BlockedSite[]>(blockedSites);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Refs
   const popupRef = useRef<HTMLDivElement>(null);
 
-  // Update local state when props change
+  /**
+   * Update local state when props change
+   */
   useEffect(() => {
     setLocalBlockedSites(blockedSites);
   }, [blockedSites]);
 
-  // Get stats
+  // Filtered site lists
   const permanentSites = localBlockedSites.filter(site => site.type === 'permanent');
   const timeLimitSites = localBlockedSites.filter(site => site.type === 'timeLimit');
 
-  // Tab options
+  // Tab configuration
   const tabOptions = [
     { 
       value: 'permanent' as const, 
@@ -54,7 +72,9 @@ const FocusWardenPopup = ({
     }
   ];
 
-  // Refresh function to sync the latest time data
+  /**
+   * Refreshes data from storage to sync the latest time tracking information
+   */
   const handleRefresh = async () => {
     if (isRefreshing) return;
     
@@ -77,13 +97,21 @@ const FocusWardenPopup = ({
     }
   };
 
-  // Format time usage display
+  /**
+   * Formats the time limit display for a site
+   * @param site The blocked site to format time for
+   * @returns Formatted string showing daily limit
+   */
   const getTimeUsageDisplay = (site: BlockedSite): string => {
     if (!site.timeLimit) return 'Daily limit: 0 min';
     return `Daily limit: ${site.timeLimit} min`;
   };
 
-  // Calculate remaining time and progress percentage for time-limited sites
+  /**
+   * Calculates remaining time and progress percentage for time-limited sites
+   * @param site The blocked site to calculate time for
+   * @returns Object with text description and progress percentage
+   */
   const getTimeRemaining = (site: BlockedSite): { text: string, progressPercent: number } => {
     if (!site.timeLimit) return { text: '0 min', progressPercent: 0 };
     
@@ -114,7 +142,9 @@ const FocusWardenPopup = ({
     }
   };
 
-  // Handle escape key
+  /**
+   * Handle escape key to close the popup
+   */
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -128,15 +158,72 @@ const FocusWardenPopup = ({
     }
   }, [isOpen, onClose]);
 
-  // Focus management
+  /**
+   * Focus management for accessibility
+   */
   useEffect(() => {
     if (isOpen && popupRef.current) {
       popupRef.current.focus();
     }
   }, [isOpen]);
 
+  // Don't render anything if popup is closed
   if (!isOpen) return null;
 
+  /**
+   * Renders a site item with favicon, info, and delete button
+   */
+  const renderSiteItem = (site: BlockedSite) => (
+    <li key={site.id} className="focus-warden-popup-item">
+      {/* Site favicon */}
+      <div className="site-favicon">
+        <img 
+          src={getFaviconUrl(site.url)} 
+          alt=""
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%23aaa" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
+          }}
+        />
+      </div>
+      
+      {/* Site information */}
+      <div className="site-info">
+        <div className="site-url">{site.url}</div>
+        
+        {site.type === 'permanent' ? (
+          <div className="site-type permanent">
+            <GavelIcon /> Permanently blocked
+          </div>
+        ) : (
+          <>
+            <div className="site-type time-limit">
+              <TimerIcon /> {getTimeUsageDisplay(site)}
+            </div>
+            <div className="time-progress-container">
+              <div 
+                className="time-progress-bar" 
+                style={{ width: `${getTimeRemaining(site).progressPercent}%` }}
+              ></div>
+              <div className="time-remaining">
+                {getTimeRemaining(site).text}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+      
+      {/* Delete button */}
+      <button 
+        className="delete-btn"
+        onClick={() => setDeleteConfirmSite(site)}
+        aria-label={`Delete ${site.url} from blocked sites`}
+      >
+        <DeleteIcon />
+      </button>
+    </li>
+  );
+
+  // Main popup content
   const modalContent = (
     <div 
       className={`focus-warden-popup ${isOpen ? 'active' : ''}`}
@@ -144,6 +231,7 @@ const FocusWardenPopup = ({
       tabIndex={-1}
     >
       <div className="focus-warden-popup-content">
+        {/* Header with title and actions */}
         <div className="focus-warden-popup-header">
           <h2 id="focus-warden-popup-title">Manage Blocked Sites</h2>
           <div className="header-actions">
@@ -184,32 +272,7 @@ const FocusWardenPopup = ({
                 <p className="focus-warden-popup-empty">No permanently blocked sites</p>
               ) : (
                 <ul className="focus-warden-popup-list">
-                  {permanentSites.map(site => (
-                    <li key={site.id} className="focus-warden-popup-item">
-                      <div className="site-favicon">
-                        <img 
-                          src={getFaviconUrl(site.url)} 
-                          alt=""
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%23aaa" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
-                          }}
-                        />
-                      </div>
-                      <div className="site-info">
-                        <div className="site-url">{site.url}</div>
-                        <div className="site-type permanent">
-                          <GavelIcon /> Permanently blocked
-                        </div>
-                      </div>
-                      <button 
-                        className="delete-btn"
-                        onClick={() => setDeleteConfirmSite(site)}
-                        aria-label={`Delete ${site.url} from blocked sites`}
-                      >
-                        <DeleteIcon />
-                      </button>
-                    </li>
-                  ))}
+                  {permanentSites.map(renderSiteItem)}
                 </ul>
               )}
             </>
@@ -219,41 +282,7 @@ const FocusWardenPopup = ({
                 <p className="focus-warden-popup-empty">No time-limited blocks</p>
               ) : (
                 <ul className="focus-warden-popup-list">
-                  {timeLimitSites.map(site => (
-                    <li key={site.id} className="focus-warden-popup-item">
-                      <div className="site-favicon">
-                        <img 
-                          src={getFaviconUrl(site.url)} 
-                          alt=""
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%23aaa" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
-                          }}
-                        />
-                      </div>
-                      <div className="site-info">
-                        <div className="site-url">{site.url}</div>
-                        <div className="site-type time-limit">
-                          <TimerIcon /> {getTimeUsageDisplay(site)}
-                        </div>
-                        <div className="time-progress-container">
-                          <div 
-                            className="time-progress-bar" 
-                            style={{ width: `${getTimeRemaining(site).progressPercent}%` }}
-                          ></div>
-                          <div className="time-remaining">
-                            {getTimeRemaining(site).text}
-                          </div>
-                        </div>
-                      </div>
-                      <button 
-                        className="delete-btn"
-                        onClick={() => setDeleteConfirmSite(site)}
-                        aria-label={`Delete ${site.url} from blocked sites`}
-                      >
-                        <DeleteIcon />
-                      </button>
-                    </li>
-                  ))}
+                  {timeLimitSites.map(renderSiteItem)}
                 </ul>
               )}
             </>

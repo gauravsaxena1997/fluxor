@@ -8,23 +8,23 @@ import { useData } from '../../context/DataContext';
 import ToggleSelector from '../ToggleSelector/ToggleSelector';
 import './FocusWarden.css';
 
-// Safety check for webRequest API - wrap in try/catch to prevent errors
-try {
-  // Only try to access chrome.webRequest if it exists
-  if (typeof chrome !== 'undefined' && chrome.webRequest && chrome.webRequest.onBeforeRequest) {
-    console.log('webRequest API detected');
-  }
-} catch (error) {
-  console.error('Error checking webRequest API:', error);
-}
-
-// Helper function to get today's date string in YYYY-MM-DD format
+/**
+ * Helper function to get today's date string in YYYY-MM-DD format
+ * Used for daily time limit reset tracking
+ */
 function getTodayString(): string {
   const date = new Date();
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+/**
+ * Focus Warden Component
+ * 
+ * A productivity tool that allows users to block distracting websites
+ * either permanently or with time limits.
+ */
 export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
+  // Context and state
   const { data, updateWidgetData } = useData();
   const [url, setUrl] = useState('');
   const [blockType, setBlockType] = useState<BlockType>('permanent');
@@ -34,9 +34,11 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
   const [blockedSites, setBlockedSites] = useState<BlockedSite[]>(
     data?.widgets?.focusWarden?.blockedSites || []
   );
+  
+  // Refs
   const timeLimitInputRef = useRef<HTMLInputElement>(null);
 
-  // Define toggle options
+  // Block type options for the toggle selector
   const blockTypeOptions = [
     { 
       value: 'permanent' as BlockType, 
@@ -48,7 +50,9 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     }
   ];
 
-  // Load blocked sites from storage on mount
+  /**
+   * Load blocked sites from storage on component mount and when data changes
+   */
   useEffect(() => {
     const loadBlockedSites = async () => {
       try {
@@ -86,8 +90,6 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
         
         // Get blocked sites from DataContext with null checks
         const storedSites = data?.widgets?.focusWarden?.blockedSites || [];
-        
-        // Important: No longer filter out expired time-limited sites
         setBlockedSites(storedSites);
       } catch (error) {
         console.error('Error loading blocked sites:', error);
@@ -97,7 +99,9 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     loadBlockedSites();
   }, [data?.widgets?.focusWarden?.blockedSites, updateWidgetData]);
 
-  // Focus the time limit input when the block type changes to timeLimit
+  /**
+   * Auto-focus the time limit input when the block type changes to timeLimit
+   */
   useEffect(() => {
     if (blockType === 'timeLimit' && timeLimitInputRef.current) {
       setTimeout(() => {
@@ -106,6 +110,13 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     }
   }, [blockType]);
 
+  /**
+   * Validates a URL string
+   * Accepts both full URLs (with protocol) and domain-only formats
+   * 
+   * @param input URL string to validate
+   * @returns boolean indicating if URL is valid
+   */
   const validateUrl = (input: string): boolean => {
     try {
       new URL(input.startsWith('http') ? input : `https://${input}`);
@@ -115,7 +126,9 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     }
   };
 
-  // Handle opening the popup and refreshing data
+  /**
+   * Opens the manage sites popup and refreshes data from storage
+   */
   const handleOpenPopup = async () => {
     // Refresh data from storage before opening popup
     try {
@@ -131,7 +144,12 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     setIsPopupOpen(true);
   };
 
-  // Function to redirect already open tabs when adding a permanent block
+  /**
+   * Redirects already open tabs when adding a permanent block
+   * Ensures immediate blocking without requiring page refresh
+   * 
+   * @param site The newly added blocked site
+   */
   const redirectOpenTabs = async (site: BlockedSite) => {
     if (site.type !== 'permanent') return;
     
@@ -178,7 +196,12 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     }
   };
 
+  /**
+   * Handles adding a new site to the blocked list
+   * Validates input, creates a new site object, and updates storage
+   */
   const handleAddSite = () => {
+    // Validate URL
     if (!url) {
       setError('Please enter a URL');
       return;
@@ -199,12 +222,14 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
       }
     }
 
+    // Check for duplicate sites
     const normalizedUrl = normalizeUrl(url);
     if (blockedSites.some(site => site.url === normalizedUrl)) {
       setError('This site is already blocked');
       return;
     }
 
+    // Create new site object
     const newSite: BlockedSite = {
       id: Date.now().toString(),
       url: normalizedUrl,
@@ -242,6 +267,11 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     setError('');
   };
 
+  /**
+   * Handles deleting a site from the blocked list
+   * 
+   * @param siteId ID of the site to delete
+   */
   const handleDeleteSite = (siteId: string) => {
     const updatedSites = blockedSites.filter(site => site.id !== siteId);
     
@@ -259,6 +289,7 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
     }
   };
 
+  // Calculate stats for display
   const stats = {
     totalBlocked: blockedSites.length,
     permanentCount: blockedSites.filter(site => site.type === 'permanent').length,
@@ -267,7 +298,7 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
 
   return (
     <>
-      <div className={`focus-warden ${className || ''}`} style={{ maxHeight: '100%' }}>
+      <div className={`focus-warden ${className || ''}`} style={{ minHeight: '300px', width: '100%' }}>
         {/* Widget Title with Manage Icon */}
         <Box className="widget-title">
           <ShieldIcon className="widget-icon" />
@@ -350,7 +381,7 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
                     <TimerIcon className="input-icon" style={{ fontSize: '0.9rem' }} />
                   </InputAdornment>
                 ),
-                style: { marginLeft: 8 },
+                style: { paddingRight: 12 },
               }}
             />
           )}
@@ -370,6 +401,7 @@ export const FocusWarden: React.FC<FocusWardenProps> = ({ className }) => {
         </Box>
       </div>
 
+      {/* Manage Sites Popup */}
       <FocusWardenPopup
         isOpen={isPopupOpen}
         onClose={() => setIsPopupOpen(false)}

@@ -1,3 +1,9 @@
+/* 
+ * Focus Warden Component Styles
+ * Contains styles for the productivity tool that blocks distracting websites
+ */
+
+/* Main container */
 .focus-warden {
   background: transparent;
   border-radius: 8px;
@@ -7,11 +13,19 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  overflow-y: auto;
+  overflow-y: hidden; /* Hide scrollbar by default */
   box-sizing: border-box;
+  min-height: 300px; /* Set minimum height */
 }
 
-/* Widget Title */
+/* Show scrollbar when height is reduced */
+@media (max-height: 500px) {
+  .focus-warden {
+    overflow-y: auto;
+  }
+}
+
+/* ===== Widget Header ===== */
 .widget-title {
   display: flex;
   align-items: center;
@@ -43,7 +57,7 @@
   background-color: rgba(77, 182, 172, 0.1) !important;
 }
 
-/* Stats Row */
+/* ===== Stats Row ===== */
 .stats-row {
   display: flex;
   width: 100%;
@@ -88,6 +102,7 @@
   margin: 0 4px;
 }
 
+/* Dark theme adjustments for stats */
 :global(.dark-theme) .stat-label {
   color: var(--text-secondary-dark);
 }
@@ -100,7 +115,7 @@
   background-color: rgba(77, 182, 172, 0.4);
 }
 
-/* URL Input */
+/* ===== URL Input ===== */
 .url-input-row {
   margin-bottom: 16px;
   position: relative;
@@ -111,16 +126,7 @@
   font-size: 1.1rem;
 }
 
-.add-icon {
-  cursor: pointer;
-  color: var(--accent-color);
-}
-
-.add-icon:hover {
-  color: var(--accent-hover);
-}
-
-/* Type and Time Limit Row */
+/* ===== Block Type and Time Limit Row ===== */
 .type-row {
   display: flex;
   align-items: center;
@@ -130,7 +136,26 @@
   width: 100%;
 }
 
-/* Override ToggleSelector styles for consistency */
+/* Time limit input */
+.time-limit-input {
+  width: 90px;
+  min-width: 0;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Hide spin buttons for number inputs */
+.focus-warden input[type="number"]::-webkit-inner-spin-button,
+.focus-warden input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.focus-warden input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* ===== Toggle Selector Overrides ===== */
 .focus-warden :global(.toggle-selector-group) {
   flex-shrink: 0;
   background-color: rgba(77, 182, 172, 0.1);
@@ -150,27 +175,10 @@
   font-size: 0.9rem;
 }
 
-.time-limit-input {
-  width: 112px;
-  min-width: 0;
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-/* Hide spin buttons for number inputs */
-.focus-warden input[type="number"]::-webkit-inner-spin-button,
-.focus-warden input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.focus-warden input[type="number"] {
-  -moz-appearance: textfield; /* Firefox */
-}
-
-/* Actions Row */
+/* ===== Actions Row ===== */
 .actions-row {
   display: flex;
+  margin-top: 12px;
   gap: 6px;
 }
 
@@ -192,7 +200,8 @@
   color: rgba(255, 255, 255, 0.7) !important;
 }
 
-/* MUI Overrides */
+/* ===== MUI Component Overrides ===== */
+/* TextField */
 .focus-warden .MuiTextField-root {
   background: var(--input-bg);
   border-radius: 4px;
@@ -215,6 +224,7 @@
   border-color: var(--accent-color);
 }
 
+/* Buttons */
 .focus-warden .MuiIconButton-root {
   color: var(--accent-color);
   padding: 6px;
@@ -234,7 +244,7 @@
   background: var(--accent-hover);
 }
 
-/* Helper text styling */
+/* Helper text and input adjustments */
 .focus-warden .MuiFormHelperText-root {
   font-size: 0.75rem;
   margin: 4px 0 0 0;
@@ -243,27 +253,27 @@
   text-overflow: ellipsis;
 }
 
-/* Fix for input padding */
 .focus-warden .MuiOutlinedInput-root {
   padding-left: 8px;
 }
 
-/* Fix for MUI input adornments */
 .focus-warden .MuiInputAdornment-root {
   margin-right: 0;
   max-height: 100%;
 }
 
-/* Fix for input field overflow */
 .focus-warden .MuiFormControl-root {
   min-height: 0;
   margin-bottom: 0;
 }
 
-/* Responsive adjustments */
+/* ===== Responsive Adjustments ===== */
+/* Large screens */
 @media (max-width: 1200px) {
   .focus-warden {
     padding: 10px;
+    width: 100% !important; /* Force 100% width */
+    max-width: 100% !important; /* Force 100% max-width */
   }
   
   .url-input-row,
@@ -277,17 +287,20 @@
   }
 }
 
+/* Medium screens */
 @media (max-width: 992px) {
   .focus-warden {
-    width: 100%;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-basis: 100% !important; /* Add flex-basis for grid systems */
   }
 }
 
+/* Mobile screens */
 @media (max-width: 768px) {
   .focus-warden {
-    width: 100%;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   
   .focus-warden :global(.toggle-selector-option) {
