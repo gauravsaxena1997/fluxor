@@ -166,7 +166,6 @@ body, html {
   grid-template-rows: repeat(2, 1fr);
   gap: 20px;
   overflow: hidden;
-  padding: 10px;
 }
 
 .focus-warden-widget {
