@@ -48,11 +48,11 @@ const defaultData: AppData = {
   themeSettings: {
     theme: 'light',
     backgroundImage: null,
-    accentColor: '#4db6ac',
+    accentColor: '#5c6bc0',
   },
   linkSettings: {
     displayMode: 'both',
-    linksPerRow: 4,
+    linksPerRow: 5,
   },
   linkGroups: [
     {
@@ -71,8 +71,10 @@ const defaultData: AppData = {
       name: 'Job',
       links: [
         { id: '2-1', name: 'Naukri', url: 'https://naukri.com', icon: 'work' },
-        { id: '2-2', name: 'Instahire', url: 'https://instahire.com', icon: 'person_search' },
+        { id: '2-2', name: 'Instahire', url: 'https://instahyre.com', icon: 'person_search' },
         { id: '2-3', name: 'FoundIt', url: 'https://foundit.in', icon: 'search' },
+        { id: '2-4', name: 'Upwork', url: 'https://www.upwork.com/', icon: 'search' },
+        { id: '2-5', name: 'Fiverr', url: 'https://www.fiverr.com/', icon: 'search' },
       ]
     },
     {
@@ -81,6 +83,7 @@ const defaultData: AppData = {
       links: [
         { id: '3-1', name: 'GitHub', url: 'https://github.com', icon: 'github' },
         { id: '3-2', name: 'CodeSandbox', url: 'https://codesandbox.io', icon: 'dashboard' },
+        { id: '3-3', name: 'Brave Extension', url: 'brave://extensions/', icon: 'dashboard' },
       ]
     },
     {
@@ -112,6 +115,7 @@ interface DataContextType {
     data: Partial<NonNullable<WidgetsData[T]>>
   ) => void;
   toggleTheme: () => void;
+  shuffleBackground: () => Promise<void>;
 }
 
 // Create the context with default values
@@ -122,6 +126,7 @@ const DataContext = createContext<DataContextType>({
   updateThemeSettings: () => {},
   updateWidgetData: () => {},
   toggleTheme: () => {},
+  shuffleBackground: async () => {},
 });
 
 // Provider component
@@ -326,6 +331,61 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     });
   };
 
+  // Shuffle background function for main app (uses random keywords)
+  const shuffleBackground = async () => {
+    console.log('DataContext shuffleBackground called');
+    
+    const gradients = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+      'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+      'linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%)',
+    ];
+    
+    try {
+      // Try Unsplash first with random keywords
+      const keywords = ['nature', 'landscape', 'mountain', 'ocean', 'forest', 'sunset', 'sky', 'abstract', 'minimal', 'color', 'architecture', 'city', 'space', 'flowers', 'desert'];
+      const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)];
+      
+      console.log('DataContext using random keyword:', randomKeyword);
+      
+      // Using Unsplash Source API random route with cache-busting signature
+      const unsplashUrl = `https://source.unsplash.com/random/1920x1080/?${encodeURIComponent(randomKeyword)}&sig=${Date.now()}`;
+      
+      console.log('DataContext testing Unsplash URL:', unsplashUrl);
+      
+      // Test if image loads properly
+      const img = new Image();
+      img.onload = () => {
+        console.log('DataContext: Unsplash image loaded successfully');
+        updateThemeSettings({
+          backgroundImage: unsplashUrl
+        });
+      };
+      img.onerror = () => {
+        console.log('DataContext: Unsplash failed, using gradient fallback');
+        const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+        updateThemeSettings({
+          backgroundImage: randomGradient
+        });
+      };
+      img.src = unsplashUrl;
+      
+    } catch (error) {
+      console.error('Error setting shuffled background:', error);
+      // Fallback to gradient
+      const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+      console.log('DataContext using fallback gradient:', randomGradient);
+      updateThemeSettings({
+        backgroundImage: randomGradient
+      });
+    }
+  };
+
   // Clear legacy storage items after migration
   useEffect(() => {
     // Run only once after initial data load
@@ -336,6 +396,22 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     localStorage.removeItem('fluxor-bg-image');
   }, []);
 
+  // Auto-shuffle background on first load if no background is set
+  useEffect(() => {
+    // Add a small delay to ensure everything is initialized
+    const timer = setTimeout(() => {
+      const currentBg = data.themeSettings?.backgroundImage;
+      if (!currentBg || currentBg.trim() === '') {
+        console.log('No background set, triggering shuffle...', { currentBg });
+        shuffleBackground().catch(error => console.error('Shuffle background failed:', error));
+      } else {
+        console.log('Background already set:', currentBg);
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []); // Only run once on mount
+
   // Provide the context value
   const contextValue: DataContextType = {
     data,
@@ -344,6 +420,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     updateThemeSettings,
     updateWidgetData,
     toggleTheme,
+    shuffleBackground,
   };
 
   return (

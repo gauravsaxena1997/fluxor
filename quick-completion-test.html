@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Completion Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .timer-display {
+            font-size: 4rem;
+            margin: 2rem 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .stats {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem 0;
+            font-size: 1.2rem;
+        }
+        
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        .log {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            min-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quick Completion Test (3 Second Timer)</h1>
+    
+    <div class="stats">
+        <div class="stat-item">
+            <div>Pomodoros: <span id="pomodoroCount">0</span></div>
+        </div>
+        <div class="stat-item">
+            <div>Short Breaks: <span id="shortBreakCount">0</span></div>
+        </div>
+        <div class="stat-item">
+            <div>Long Breaks: <span id="longBreakCount">0</span></div>
+        </div>
+    </div>
+    
+    <div>Current Cycle: <span id="currentCycle">pomodoro</span></div>
+    <div class="timer-display" id="timer">00:03</div>
+    
+    <div class="controls">
+        <button id="startBtn">Start</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn">Reset</button>
+        <button id="switchToShortBreak">Switch to Short Break</button>
+        <button id="switchToLongBreak">Switch to Long Break</button>
+        <button id="switchToPomodoro">Switch to Pomodoro</button>
+    </div>
+    
+    <div class="log" id="log"></div>
+
+    <script>
+        class CompletionTest {
+            constructor() {
+                this.timeLeft = 3; // 3 seconds for quick testing
+                this.isRunning = false;
+                this.interval = null;
+                this.currentCycle = 'pomodoro';
+                this.stats = { pomodoros: 0, shortBreak: 0, longBreak: 0 };
+                this.storageKey = 'completion-test-data';
+                
+                this.setupElements();
+                this.loadFromStorage();
+                this.updateDisplay();
+                this.setupEvents();
+                
+                this.log('Test initialized');
+            }
+            
+            setupElements() {
+                this.timerEl = document.getElementById('timer');
+                this.currentCycleEl = document.getElementById('currentCycle');
+                this.pomodoroCountEl = document.getElementById('pomodoroCount');
+                this.shortBreakCountEl = document.getElementById('shortBreakCount');
+                this.longBreakCountEl = document.getElementById('longBreakCount');
+                this.logEl = document.getElementById('log');
+                this.startBtn = document.getElementById('startBtn');
+                this.pauseBtn = document.getElementById('pauseBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+            }
+            
+            log(message) {
+                const timestamp = new Date().toLocaleTimeString();
+                this.logEl.innerHTML += `${timestamp}: ${message}<br>`;
+                this.logEl.scrollTop = this.logEl.scrollHeight;
+                console.log(`[${timestamp}] ${message}`);
+            }
+            
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            saveToStorage() {
+                const data = {
+                    timeLeft: this.timeLeft,
+                    isRunning: this.isRunning,
+                    currentCycle: this.currentCycle,
+                    stats: this.stats,
+                    lastSaved: Date.now()
+                };
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+                this.log(`Saved: ${this.formatTime(this.timeLeft)} (${this.currentCycle}, stats: P:${this.stats.pomodoros} SB:${this.stats.shortBreak} LB:${this.stats.longBreak})`);
+            }
+            
+            loadFromStorage() {
+                const stored = localStorage.getItem(this.storageKey);
+                if (stored) {
+                    const data = JSON.parse(stored);
+                    this.timeLeft = data.timeLeft || 3;
+                    this.currentCycle = data.currentCycle || 'pomodoro';
+                    this.stats = data.stats || { pomodoros: 0, shortBreak: 0, longBreak: 0 };
+                    this.log(`Loaded from storage: ${JSON.stringify(data)}`);
+                }
+            }
+            
+            setupEvents() {
+                this.startBtn.addEventListener('click', () => this.start());
+                this.pauseBtn.addEventListener('click', () => this.pause());
+                this.resetBtn.addEventListener('click', () => this.reset());
+                
+                document.getElementById('switchToShortBreak').addEventListener('click', () => this.switchCycle('shortBreak'));
+                document.getElementById('switchToLongBreak').addEventListener('click', () => this.switchCycle('longBreak'));
+                document.getElementById('switchToPomodoro').addEventListener('click', () => this.switchCycle('pomodoro'));
+            }
+            
+            start() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.log(`Started ${this.currentCycle} timer`);
+                
+                this.interval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    this.saveToStorage();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.complete();
+                    }
+                }, 1000);
+            }
+            
+            pause() {
+                this.isRunning = false;
+                if (this.interval) {
+                    clearInterval(this.interval);
+                    this.interval = null;
+                }
+                this.log('Timer paused');
+                this.saveToStorage();
+            }
+            
+            reset() {
+                this.pause();
+                this.timeLeft = 3;
+                this.log('Timer reset');
+                this.updateDisplay();
+                this.saveToStorage();
+            }
+            
+            switchCycle(newCycle) {
+                if (this.isRunning) return;
+                
+                this.currentCycle = newCycle;
+                this.timeLeft = 3;
+                this.log(`Switched to ${newCycle}`);
+                this.updateDisplay();
+                this.saveToStorage();
+            }
+            
+            complete() {
+                this.pause();
+                this.log(`BEFORE COMPLETION - Stats: P:${this.stats.pomodoros} SB:${this.stats.shortBreak} LB:${this.stats.longBreak}`);
+                
+                // Update stats based on current cycle
+                if (this.currentCycle === 'pomodoro') {
+                    this.stats.pomodoros += 1;
+                    this.log('Incremented pomodoros count');
+                } else if (this.currentCycle === 'shortBreak') {
+                    this.stats.shortBreak += 1;
+                    this.log('Incremented shortBreak count');
+                } else if (this.currentCycle === 'longBreak') {
+                    this.stats.longBreak += 1;
+                    this.log('Incremented longBreak count');
+                }
+                
+                this.log(`AFTER COMPLETION - Stats: P:${this.stats.pomodoros} SB:${this.stats.shortBreak} LB:${this.stats.longBreak}`);
+                
+                // Reset timer
+                this.timeLeft = 3;
+                
+                this.updateDisplay();
+                this.saveToStorage();
+                
+                alert(`${this.currentCycle} completed! Check the stats above.`);
+            }
+            
+            updateDisplay() {
+                this.timerEl.textContent = this.formatTime(this.timeLeft);
+                this.currentCycleEl.textContent = this.currentCycle;
+                this.pomodoroCountEl.textContent = this.stats.pomodoros;
+                this.shortBreakCountEl.textContent = this.stats.shortBreak;
+                this.longBreakCountEl.textContent = this.stats.longBreak;
+                
+                // Update button states
+                this.startBtn.disabled = this.isRunning;
+                this.pauseBtn.disabled = !this.isRunning;
+                this.startBtn.style.opacity = this.isRunning ? '0.5' : '1';
+                this.pauseBtn.style.opacity = !this.isRunning ? '0.5' : '1';
+            }
+        }
+        
+        // Start the test
+        new CompletionTest();
+    </script>
+</body>
+</html>

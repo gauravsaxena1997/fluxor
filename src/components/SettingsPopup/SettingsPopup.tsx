@@ -8,6 +8,7 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import WallpaperIcon from '@mui/icons-material/Wallpaper';
 import ClearIcon from '@mui/icons-material/Clear';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
 import ToggleSelector from '../ToggleSelector/ToggleSelector';
 
 interface SettingsPopupProps {
@@ -19,7 +20,7 @@ const SettingsPopup = ({
   isOpen,
   onClose
 }: SettingsPopupProps) => {
-  const { data, updateThemeSettings, toggleTheme } = useData();
+  const { data, updateThemeSettings, toggleTheme, shuffleBackground } = useData();
   const themeSettings = data.themeSettings || { theme: 'light', backgroundImage: null, accentColor: '#4db6ac' };
   const { theme, backgroundImage, accentColor } = themeSettings;
   
@@ -28,6 +29,7 @@ const SettingsPopup = ({
   const [error, setError] = useState('');
   const [accentColorInput, setAccentColorInput] = useState(accentColor || '#4db6ac');
   const [colorError, setColorError] = useState('');
+  const [isShuffling, setIsShuffling] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Clear timeout on unmount
@@ -230,6 +232,27 @@ const SettingsPopup = ({
                   <ClearIcon />
                 </button>
               )}
+            </div>
+            <div className="background-action-buttons">
+              <button 
+                className={`shuffle-background-btn ${isShuffling ? 'loading' : ''}`}
+                onClick={async () => {
+                  console.log('Shuffle button clicked in main app');
+                  setIsShuffling(true);
+                  try {
+                    await shuffleBackground();
+                  } catch (error) {
+                    console.error('Shuffle failed:', error);
+                  } finally {
+                    setIsShuffling(false);
+                  }
+                }}
+                disabled={isShuffling}
+                aria-label="Random Background"
+              >
+                <ShuffleIcon />
+                <span>{isShuffling ? 'Shuffling...' : 'Random Background'}</span>
+              </button>
             </div>
             {error && <div className="error-message">{error}</div>}
           </div>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Pomodoro Timer</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 20px; 
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        .debug-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .timer-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #5c6bc0;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .timer-link:hover {
+            background: #4c5bb5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pomodoro Timer Debug Test</h1>
+    
+    <div class="debug-info">
+        <h2>Test Instructions:</h2>
+        <ol>
+            <li>Click the link below to access the Pomodoro Timer</li>
+            <li>Switch to "Short Break" mode</li>
+            <li>Start the timer (it will run for 5 seconds)</li>
+            <li>Let it complete and observe the console logs</li>
+            <li>Check if daily stats updated</li>
+        </ol>
+    </div>
+
+    <div class="debug-info">
+        <h3>Access Timer:</h3>
+        <a href="http://localhost:5186/pomodoro-timer" class="timer-link" target="_blank">
+            Open Pomodoro Timer in New Tab
+        </a>
+        <br>
+        <a href="http://localhost:5186/" class="timer-link" target="_blank">
+            Open Main App (Timer icon in top-right)
+        </a>
+    </div>
+
+    <div class="debug-info">
+        <h3>Console Debugging:</h3>
+        <p>Open Developer Tools (F12) and watch the Console tab for debug logs starting with emojis like:</p>
+        <ul>
+            <li>🎯 - Timer completion events</li>
+            <li>📊 - Stats updates</li>
+            <li>⏰ - Timer ticks</li>
+            <li>💾 - Storage operations</li>
+            <li>🔄 - Data updates</li>
+        </ul>
+    </div>
+
+    <script>
+        // Add some basic debugging info
+        console.log('🚀 Debug page loaded');
+        console.log('📅 Current time:', new Date().toISOString());
+        console.log('🌐 User agent:', navigator.userAgent);
+    </script>
+</body>
+</html>

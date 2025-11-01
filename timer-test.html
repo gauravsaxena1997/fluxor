@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer Test - 10 Second Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .timer-display {
+            font-size: 4rem;
+            margin: 2rem 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        .status {
+            margin: 1rem 0;
+            font-size: 1.2rem;
+        }
+        
+        .storage-info {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pomodoro Timer Test (10 Second Demo)</h1>
+    <div class="status" id="status">Ready to start</div>
+    <div class="timer-display" id="timer">00:10</div>
+    
+    <div class="controls">
+        <button id="startBtn">Start</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+    
+    <div class="storage-info">
+        <div>Timer data is saved to localStorage</div>
+        <div id="storageInfo">No saved data</div>
+    </div>
+
+    <script>
+        class TimerTest {
+            constructor() {
+                this.timeLeft = 10; // 10 seconds for testing
+                this.isRunning = false;
+                this.interval = null;
+                this.storageKey = 'timer-test-data';
+                
+                this.timerEl = document.getElementById('timer');
+                this.statusEl = document.getElementById('status');
+                this.storageEl = document.getElementById('storageInfo');
+                this.startBtn = document.getElementById('startBtn');
+                this.pauseBtn = document.getElementById('pauseBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                
+                this.loadFromStorage();
+                this.setupEvents();
+                this.updateDisplay();
+            }
+            
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            saveToStorage() {
+                const data = {
+                    timeLeft: this.timeLeft,
+                    isRunning: this.isRunning,
+                    lastSaved: Date.now()
+                };
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+                this.storageEl.textContent = `Saved: ${this.formatTime(this.timeLeft)} (${this.isRunning ? 'running' : 'paused'}) at ${new Date().toLocaleTimeString()}`;
+            }
+            
+            loadFromStorage() {
+                const stored = localStorage.getItem(this.storageKey);
+                if (stored) {
+                    const data = JSON.parse(stored);
+                    const elapsed = Math.floor((Date.now() - data.lastSaved) / 1000);
+                    
+                    // Only calculate elapsed time if timer was running when saved
+                    this.timeLeft = Math.max(0, data.timeLeft - (data.isRunning ? elapsed : 0));
+                    
+                    if (this.timeLeft === 0 && data.timeLeft > 0) {
+                        this.statusEl.textContent = `Timer completed while away at ${new Date(data.lastSaved + (data.timeLeft * 1000)).toLocaleTimeString()}`;
+                        this.timeLeft = 10; // Reset
+                    } else if (data.isRunning) {
+                        this.statusEl.textContent = `Resumed from running state (${elapsed}s elapsed)`;
+                    } else {
+                        this.statusEl.textContent = `Resumed from paused state (no time elapsed)`;
+                    }
+                    
+                    this.storageEl.textContent = `Loaded: ${this.formatTime(data.timeLeft)} was ${data.isRunning ? 'running' : 'paused'} (${elapsed}s ago)`;
+                }
+            }
+            
+            setupEvents() {
+                this.startBtn.addEventListener('click', () => this.start());
+                this.pauseBtn.addEventListener('click', () => this.pause());
+                this.resetBtn.addEventListener('click', () => this.reset());
+            }
+            
+            start() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.statusEl.textContent = 'Timer running...';
+                
+                this.interval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    this.saveToStorage();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.complete();
+                    }
+                }, 1000);
+            }
+            
+            pause() {
+                this.isRunning = false;
+                if (this.interval) {
+                    clearInterval(this.interval);
+                    this.interval = null;
+                }
+                this.statusEl.textContent = 'Timer paused';
+                this.saveToStorage();
+            }
+            
+            reset() {
+                this.pause();
+                this.timeLeft = 10;
+                this.statusEl.textContent = 'Timer reset - refresh page to test persistence';
+                this.updateDisplay();
+                this.saveToStorage();
+                
+                // Visual confirmation
+                setTimeout(() => {
+                    this.statusEl.textContent = 'Timer reset (refresh page to verify it stays at 00:10)';
+                }, 1000);
+            }
+            
+            complete() {
+                this.pause();
+                this.timeLeft = 0;
+                this.statusEl.textContent = '🎉 Timer Complete! 🎉';
+                alert('Timer finished!');
+                
+                // Auto reset after completion
+                setTimeout(() => {
+                    this.timeLeft = 10;
+                    this.statusEl.textContent = 'Ready for next session';
+                    this.updateDisplay();
+                    this.saveToStorage();
+                }, 2000);
+            }
+            
+            updateDisplay() {
+                this.timerEl.textContent = this.formatTime(this.timeLeft);
+                
+                // Update button states
+                this.startBtn.disabled = this.isRunning;
+                this.pauseBtn.disabled = !this.isRunning;
+                this.startBtn.style.opacity = this.isRunning ? '0.5' : '1';
+                this.pauseBtn.style.opacity = !this.isRunning ? '0.5' : '1';
+            }
+        }
+        
+        // Start the timer test
+        new TimerTest();
+    </script>
+</body>
+</html>

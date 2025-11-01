@@ -1,0 +1,26 @@
+Make these changes to the PomodoroTimer component:
+
+
+
+Issues:
+The inputs are still black.
+Random background buttom is not working.
+I still see default background. As I mentioned, please remove any hardcoded background and set shuffle with a random background from start.
+
+Add Unsplash API with key
+
+Now, let's take a deep dive in why Random background button is not working. Please check is there is conflicting, dead, duplicate or any other issue that could be causing this. It is suppose to get a randrom image from Unsplash by given query input. But intead, I am seeinf a random Preset background image on Click of Random background button. 
+
+
+Multiple open tab handling on browser: one pause, all pause. Sync backgroud etc. Reason is if user open multiple tabs then all opened instances will reamin in sync, add resume, all paused, all sae background, all same timer value etc 
+This is not qorking propertly. Please debug deeply what could be the possible cause and fix on priority.
+1 second gap in multiple tabs when pause.
+
+WHen puase and refreshed, timer is reset. Please fix this.
+
+Settings:
+Reset to defaults button should reset all settings to default values.
+
+Custom Background array and suffle logic
+
+Everyday the daily stats bar should reset, currently I am seeing old day stats.
